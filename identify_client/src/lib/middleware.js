@@ -1,41 +1,41 @@
 import axios from "axios";
 require("dotenv").config();
 
-const API_BASE_URL = process.env.API_URL || "";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export const checkEmail = async (email) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/check-email`, { email });
-    return response.data.isValid;
+    const response = await axios.get(
+      `${API_BASE_URL}/users/checkByEmail?email=${email}`
+    );
+    if (response.status === 409) {
+      return false;
+    } else if (response.status === 202) {
+      return true;
+    }
   } catch (error) {
     console.error("Error checking email:", error);
     return false;
   }
 };
 
-export const checkPasswordStrength = async (password) => {
+export const checkNickname = async (nickname) => {
   try {
-    const response = await axios.post(
-      `${API_BASE_URL}/check-password-strength`,
-      { password }
+    const response = await axios.get(
+      `${API_BASE_URL}/users/checkByNickname?nickname=${nickname}`
     );
-    return response.data.isStrong;
-  } catch (error) {
-    console.error("Error checking password strength:", error);
-    return false;
-  }
-};
-
-export const checkNicknameUniqueness = async (nickname) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/check-nickname`, {
-      nickname,
-    });
-    return response.data.isUnique;
+    if (response.status === 409) {
+      return false;
+    } else if (response.status === 202) {
+      return true;
+    }
   } catch (error) {
     console.error("Error checking nickname uniqueness:", error);
     return false;
   }
 };
 
-// Add more API call functions as needed
+export const checkPasswordStrength = (password) => {
+  // TODO add password check logic
+  return true;
+};

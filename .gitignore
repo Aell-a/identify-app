@@ -1,1 +1,2 @@
-./identify_docker/
+/identify_docker/
+.DS_Store

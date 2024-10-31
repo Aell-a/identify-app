@@ -5,8 +5,8 @@ import Navbar from "./components/navbar";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "NextJS Demo App",
-  description: "A demo application with Next.js, Tailwind, and more",
+  title: "IDentify",
+  description: "The website to identify your unknown objects.",
 };
 
 export default function RootLayout({ children }) {

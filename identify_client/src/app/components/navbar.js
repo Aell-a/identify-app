@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import AuthPopup from "./AuthPopup";
+import AuthPopup from "./authPopup";
 
 export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
