@@ -1,19 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import {
-  checkEmail,
-  checkPasswordStrength,
-  checkNickname,
-} from "@/lib/middleware";
+import { checkEmail, checkNickname } from "@/lib/middleware";
+import { checkPasswordStrength } from "@/lib/utils";
+import { useAuth } from "@/lib/auth";
 
-export default function AuthPopup({ onClose, onLogin }) {
+export default function AuthPopup({ onClose }) {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [retypePassword, setRetypePassword] = useState("");
   const [nickname, setNickname] = useState("");
   const [errors, setErrors] = useState({});
+
+  const { signup, isLoading, error } = useAuth();
 
   const handleContinue = async () => {
     if (step === 1) {
@@ -63,7 +63,7 @@ export default function AuthPopup({ onClose, onLogin }) {
       setErrors({});
       setStep(3);
     } else if (step === 3) {
-      onLogin(nickname, email, password);
+      await signup(nickname, email, password);
     }
   };
 
@@ -95,6 +95,11 @@ export default function AuthPopup({ onClose, onLogin }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-gray-800 p-8 rounded-lg w-96">
+        {error && (
+          <div className="mb-4 p-2 bg-red-600 text-white rounded" role="alert">
+            {error}
+          </div>
+        )}
         {step !== 3 && <h2 className="text-2xl font-bold mb-4">Register</h2>}
         {step === 1 && (
           <>
@@ -143,14 +148,16 @@ export default function AuthPopup({ onClose, onLogin }) {
             <button
               onClick={onClose}
               className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+              disabled={isLoading}
             >
               Cancel
             </button>
             <button
               onClick={handleContinue}
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              disabled={isLoading}
             >
-              {step === 1 ? "Continue" : "Register"}
+              {isLoading ? "Loading..." : step === 1 ? "Continue" : "Register"}
             </button>
           </div>
         )}
