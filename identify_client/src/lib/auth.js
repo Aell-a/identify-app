@@ -1,12 +1,19 @@
 "use client";
 
-import { register, verify } from "./middleware";
+import { login, register, verify } from "./middleware";
 
-const { createContext, useReducer, useEffect, useContext } = require("react");
+const {
+  createContext,
+  useReducer,
+  useEffect,
+  useContext,
+  act,
+} = require("react");
 
 const AuthContext = createContext();
 
 const initialState = {
+  id: null,
   user: null,
   isLoading: false,
   error: null,
@@ -15,11 +22,31 @@ const initialState = {
 function authReducer(state, action) {
   switch (action.type) {
     case "LOGIN":
+      return {
+        ...state,
+        id: action.payload.id,
+        user: action.payload.nickname,
+        isLoading: false,
+        error: null,
+      };
     case "SIGNUP":
+      return {
+        ...state,
+        id: action.payload.id,
+        user: action.payload.nickname,
+        isLoading: false,
+        error: null,
+      };
     case "AUTH_SUCCESS":
-      return { ...state, user: action.payload, isLoading: false, error: null };
+      return {
+        ...state,
+        id: action.payload.id,
+        user: action.payload.nickname,
+        isLoading: false,
+        error: null,
+      };
     case "LOGOUT":
-      return { ...state, user: null };
+      return { ...state, id: null, user: null };
     case "AUTH_FAILURE":
       return { ...state, error: action.payload, isLoading: false };
     case "LOADING":
@@ -44,7 +71,7 @@ export function AuthProvider({ children }) {
     const response = await verify(token);
 
     if (response.success) {
-      dispatch({ type: "AUTH_SUCCESS", payload: response.data.userId });
+      dispatch({ type: "AUTH_SUCCESS", payload: response.data });
     } else {
       dispatch({ type: "AUTH_FAILURE", payload: response.error });
     }
@@ -54,13 +81,16 @@ export function AuthProvider({ children }) {
     dispatch({ type: "LOADING" });
     try {
       const response = await login(identifier, password);
-
       if (response.success) {
         localStorage.setItem("token", response.data.token);
-        dispatch({ type: "LOGIN", payload: response.data.userId });
+        dispatch({ type: "LOGIN", payload: response.data });
       } else {
-        dispatch({ type: "AUTH_FAILURE", payload: response.error });
+        dispatch({
+          type: "AUTH_FAILURE",
+          payload: response.error,
+        });
       }
+      return response.data;
     } catch (error) {
       dispatch({
         type: "AUTH_FAILURE",
@@ -81,9 +111,12 @@ export function AuthProvider({ children }) {
 
       if (response.success) {
         localStorage.setItem("token", response.data.token);
-        dispatch({ type: "SIGNUP", payload: response.data.userId });
+        dispatch({ type: "SIGNUP", payload: response.data });
       } else {
-        dispatch({ type: "AUTH_FAILURE", payload: response.error });
+        dispatch({
+          type: "AUTH_FAILURE",
+          payload: response.error,
+        });
       }
     } catch (error) {
       dispatch({

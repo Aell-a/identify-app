@@ -6,8 +6,8 @@ import { AuthProvider } from "@/lib/auth";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "IDentify",
-  description: "The website to identify your unknown objects.",
+  title: "NextJS Demo App",
+  description: "A demo application with Next.js, Tailwind, and more",
 };
 
 export default function RootLayout({ children }) {
@@ -17,8 +17,17 @@ export default function RootLayout({ children }) {
         className={`${inter.className} bg-gray-900 text-gray-100 min-h-screen`}
       >
         <AuthProvider>
-          <Navbar />
-          {children}
+          <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-grow container mx-auto px-4 py-8">
+              {children}
+            </main>
+            <footer className="bg-gray-800 py-4">
+              <div className="container mx-auto px-4 text-center text-gray-400">
+                © 2024 IDentify.
+              </div>
+            </footer>
+          </div>
         </AuthProvider>
       </body>
     </html>

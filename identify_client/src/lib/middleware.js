@@ -10,16 +10,20 @@ const api = axios.create({
 const handleApiResponse = async (apiCall) => {
   try {
     const response = await apiCall();
+    console.log(response);
     return {
       success: true,
       data: response.data,
       status: response.status,
     };
   } catch (error) {
+    console.log(error);
     return {
       success: false,
-      error: error.response?.data?.message || error.message,
-      status: error.response?.status,
+      error: error.response.data.error
+        ? error.response.data.error
+        : error.message,
+      status: error.status,
     };
   }
 };
@@ -56,4 +60,11 @@ export const verify = async (token) => {
       headers: { Authorization: `Bearer ${token}` },
     })
   );
+};
+
+export const getProfile = async (id) => {
+  const response = await api.get(`/users/${id}`);
+  if (response.status !== 404) {
+    return response.data;
+  }
 };
