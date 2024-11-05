@@ -55,7 +55,7 @@ public class UserService {
             User user = userOptional.get();
             if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
                 String token = jwtUtil.generateToken(user.getId());
-                return new AuthResponse(true ,token, user.getId());
+                return new AuthResponse(true ,token, user.getId(), user.getNickname());
             } else {
                 return new AuthResponse(false, "Wrong password");
             }
@@ -69,7 +69,12 @@ public class UserService {
         userRepository.save(newUser);
 
         String token = jwtUtil.generateToken(newUser.getId());
-        return new AuthResponse(true ,token, newUser.getId());
+        return new AuthResponse(true ,token, newUser.getId(), newUser.getNickname());
+    }
+
+    public String getNicknameById(Long id) {
+        Optional<User> user = userRepository.findById(id);
+        return user.map(User::getNickname).orElse(null);
     }
 
     public Optional<Profile> getProfile(Long id) {

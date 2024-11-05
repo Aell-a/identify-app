@@ -38,9 +38,9 @@ public class UserController {
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7); // Remove "Bearer " prefix
             Long userId = jwtUtil.getUserIdFromToken(token);
-
+            String nickname = userService.getNicknameById(userId);
             if (userService.checkUser(userId)) {
-                return ResponseEntity.ok(new AuthResponse(true, token , userId));
+                return ResponseEntity.ok(new AuthResponse(true, token , userId, nickname));
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(false, "Invalid or expired token"));
             }

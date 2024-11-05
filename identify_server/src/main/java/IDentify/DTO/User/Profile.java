@@ -16,7 +16,7 @@ public class Profile {
     private String nickname;
     private String email;
     private String profilePicture;
-    private String bio;
+    private String bio; 
     private LocalDateTime accountCreated;
     private LocalDateTime lastActivity;
     private int totalPoints;
