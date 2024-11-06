@@ -42,6 +42,7 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime accountCreated = LocalDateTime.now(); // Timestamp for account creation date
 
+    @Column(nullable = false)
     private LocalDateTime lastActivity = LocalDateTime.now(); // Timestamp for the last activity
 
     @ElementCollection

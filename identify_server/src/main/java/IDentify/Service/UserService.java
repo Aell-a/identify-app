@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -44,7 +45,6 @@ public class UserService {
     public AuthResponse login(LoginRequest loginRequest) {
         Optional<User> userOptional;
 
-        // Check if the identifier is an email or a nickname
         if (loginRequest.getIdentifier().contains("@")) {
             userOptional = userRepository.findByEmail(loginRequest.getIdentifier());
         } else {
@@ -55,6 +55,8 @@ public class UserService {
             User user = userOptional.get();
             if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
                 String token = jwtUtil.generateToken(user.getId());
+                user.setLastActivity(LocalDateTime.now());
+                userRepository.save(user);
                 return new AuthResponse(true ,token, user.getId(), user.getNickname());
             } else {
                 return new AuthResponse(false, "Wrong password");
