@@ -9,7 +9,11 @@ import IDentify.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
@@ -49,7 +53,7 @@ public class UserController {
     }
 
     // Get user by ID
-    @GetMapping("/{id}")
+    @GetMapping("/profile/{id}")
     public ResponseEntity<Profile> getUserById(@PathVariable Long id) {
         return userService.getProfile(id)
                 .map(ResponseEntity::ok)
@@ -88,11 +92,14 @@ public class UserController {
     }
 
     // Update user by ID
-//    @PutMapping("/{id}")
-//    public ResponseEntity<Profile> updateUser(@PathVariable Long id, @RequestBody Profile updatedProfile) {
-//        Optional<Profile> updatedUser = userService.updateProfile(id, updatedProfile);
-//        return updatedUser
-//                .map(user -> ResponseEntity.ok(user))
-//                .orElse(ResponseEntity.notFound().build());
-//    }
+    @PutMapping("/profile/edit")
+    public ResponseEntity<Profile> updateUser(@RequestBody Profile updatedProfile) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = (Long) authentication.getPrincipal();
+
+        Optional<Profile> updatedUser = userService.updateProfile(userId, updatedProfile);
+        return updatedUser
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 }

@@ -2,7 +2,6 @@ package IDentify.Mapper;
 
 import IDentify.DTO.User.MiniProfile;
 import IDentify.DTO.User.Profile;
-import IDentify.DTO.Auth.AuthResponse;
 import IDentify.Entity.User;
 import org.springframework.stereotype.Component;
 
@@ -37,4 +36,10 @@ public class UserMapper {
                 .build();
     }
 
+    public User toUser(User user, Profile updatedProfile) {
+        user.setBio(updatedProfile.getBio());
+        user.setProfilePicture(updatedProfile.getProfilePicture());
+
+        return user;
+    }
 }
