@@ -10,7 +10,6 @@ const api = axios.create({
 const handleApiResponse = async (apiCall) => {
   try {
     const response = await apiCall();
-    console.log(response);
     return {
       success: true,
       data: response.data,
@@ -69,11 +68,21 @@ export const getProfile = async (id) => {
   }
 };
 
-export const editProfile = async (profile, token) => {
+export const editProfile = async (profile) => {
+  const token = localStorage.getItem("token");
   const response = await api.put(`/users/profile/edit`, profile, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (response.status !== 404) {
     return response.data;
   }
+};
+
+export const editProfilePicture = async (id, formData) => {
+  const token = localStorage.getItem("token");
+  const response = await api.put(`/media/profile/${id}`, formData, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error("Failed to upload profile picture");
+  return response.json();
 };

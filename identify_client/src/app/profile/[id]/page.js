@@ -1,54 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/lib/auth";
 import Image from "next/image";
-import { editProfile, getProfile } from "@/lib/middleware";
+import { editProfile, getProfile, editProfilePicture } from "@/lib/middleware";
 import { Button } from "@/components/ui/button";
+import ImageCropper from "@/app/components/imageCropper";
+import { readAndCompressImage } from "browser-image-resizer";
 
 export default function ProfilePage({ params }) {
-  const { user, id } = useAuth();
+  const { id } = useAuth();
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedBio, setEditedBio] = useState("");
-  const [editedProfilePicture, setEditedProfilePicture] = useState("");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isCropping, setIsCropping] = useState(false);
 
-  async function fetchData(id) {
+  const fetchProfile = useCallback(async (id) => {
     try {
       const response = await getProfile(id);
-      setProfile({
-        id: response.id,
-        nickname: response.nickname,
-        email: response.email,
-        profilePicture: response.profilePicture,
-        bio: response.bio,
-        accountCreated: response.accountCreated,
-        lastActivity: response.lastActivity,
-        totalPoints: response.totalPoints,
-        upvote: response.upvote,
-        downvote: response.downvote,
-        followedTags: response.followedTags,
-        badges: response.badges,
-      });
-      if (profile) {
-        setEditedBio(profile.bio);
-        setEditedProfilePicture(profile.profilePicture);
+      setProfile(response);
+      if (response) {
+        setEditedBio(response.bio);
       }
     } catch (error) {
       console.error(error);
     }
-  }
+  }, []);
 
   useEffect(() => {
-    fetchData(params.id);
-  }, [params.id]);
+    fetchProfile(params.id);
+  }, [params.id, fetchProfile]);
 
-  if (!profile) {
-    return <div>Loading...</div>;
-  }
-
-  const timeSinceLastActivity = (date) => {
-    const seconds = Math.floor((new Date() - date) / 1000);
+  const timeSinceLastActivity = useCallback((date) => {
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
     let interval = seconds / 31536000;
     if (interval > 1) return Math.floor(interval) + " years";
     interval = seconds / 2592000;
@@ -60,20 +46,74 @@ export default function ProfilePage({ params }) {
     interval = seconds / 60;
     if (interval > 1) return Math.floor(interval) + " minutes";
     return Math.floor(seconds) + " seconds";
-  };
+  }, []);
 
-  const handleSaveProfile = async () => {
+  const handleSaveProfile = useCallback(async () => {
     try {
-      profile.bio = editedBio;
-      profile.profilePicture = editedProfilePicture;
-      const token = localStorage.getItem("token");
-      const updatedProfile = await editProfile(profile, token);
+      const updatedProfile = await editProfile({ ...profile, bio: editedBio });
       setProfile(updatedProfile);
       setIsEditing(false);
     } catch (error) {
       console.error("Failed to save profile:", error);
     }
-  };
+  }, [profile, editedBio]);
+
+  const handleFileUpload = useCallback((e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("File size should be less than 2MB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  }, []);
+
+  const handleImageUpload = useCallback(
+    async (imageToUpload) => {
+      setIsUploadingImage(true);
+      try {
+        const config = {
+          quality: 0.7,
+          maxWidth: 500,
+          maxHeight: 500,
+          autoRotate: true,
+          debug: true,
+        };
+
+        const resizedImage = await readAndCompressImage(imageToUpload, config);
+
+        const formData = new FormData();
+        formData.append("file", resizedImage, "profile_picture.jpg");
+
+        await editProfilePicture(id, formData);
+        await fetchProfile(params.id);
+      } catch (error) {
+        console.error("Failed to upload profile picture:", error);
+      }
+      setIsUploadingImage(false);
+      setSelectedImage(null);
+    },
+    [id, params.id, fetchProfile]
+  );
+
+  const handleCropComplete = useCallback(
+    (croppedImage) => {
+      if (croppedImage) {
+        handleImageUpload(croppedImage);
+      }
+      setIsCropping(false);
+    },
+    [handleImageUpload]
+  );
+
+  if (!profile) {
+    return <div className="text-center mt-8">Loading...</div>;
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -81,23 +121,48 @@ export default function ProfilePage({ params }) {
         <div className="flex justify-between">
           <div className="flex items-center space-x-8">
             <div className="relative w-32 h-32 rounded-full overflow-hidden">
-              {isEditing ? (
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                  <input
-                    type="text"
-                    value={editedProfilePicture}
-                    onChange={(e) => setEditedProfilePicture(e.target.value)}
-                    className="w-full p-2 bg-gray-700 text-white text-sm"
-                    placeholder="Enter image URL"
-                  />
+              {profile.profilePicture ? (
+                <Image
+                  src={profile.profilePicture}
+                  alt={profile.nickname}
+                  layout="fill"
+                  objectFit="cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-16 w-16 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
                 </div>
-              ) : null}
-              <Image
-                src={isEditing ? editedProfilePicture : profile.profilePicture}
-                alt={profile.nickname}
-                layout="fill"
-                objectFit="cover"
-              />
+              )}
+              {isEditing && (
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                  <label
+                    htmlFor="profile-picture-upload"
+                    className="cursor-pointer text-white text-xs text-center"
+                  >
+                    Click to add/change profile picture
+                    <input
+                      id="profile-picture-upload"
+                      type="file"
+                      accept=".png,.jpg,.jpeg"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                    />
+                  </label>
+                </div>
+              )}
             </div>
             <div>
               <h1 className="text-3xl font-bold">{profile.nickname}</h1>
@@ -119,13 +184,7 @@ export default function ProfilePage({ params }) {
                 {isEditing ? (
                   <Button onClick={handleSaveProfile}>Save Profile</Button>
                 ) : (
-                  <Button
-                    onClick={() => {
-                      setIsEditing(true);
-                      setEditedBio(profile.bio);
-                      setEditedProfilePicture(profile.profilePicture);
-                    }}
-                  >
+                  <Button onClick={() => setIsEditing(true)}>
                     Edit Profile
                   </Button>
                 )}
@@ -140,16 +199,15 @@ export default function ProfilePage({ params }) {
               Created: {new Date(profile.accountCreated).toLocaleDateString()}
             </p>
             <p>
-              Last activity:{" "}
-              {timeSinceLastActivity(new Date(profile.lastActivity))} ago
+              Last activity: {timeSinceLastActivity(profile.lastActivity)} ago
             </p>
             <p>Total upvotes: {profile.totalPoints}</p>
           </div>
           <div>
             <h2 className="text-xl font-semibold mb-2">Followed Tags</h2>
             <div className="flex flex-wrap gap-2">
-              {profile.tags && profile.badges.tags > 0 ? (
-                profile.tags.map((tag) => (
+              {profile.followedTags && profile.followedTags.length > 0 ? (
+                profile.followedTags.map((tag) => (
                   <span
                     key={tag}
                     className="bg-blue-600 text-white px-2 py-1 rounded-full text-sm"
@@ -158,7 +216,7 @@ export default function ProfilePage({ params }) {
                   </span>
                 ))
               ) : (
-                <span className=" text-white px-2 py-1 rounded-full text-sm">
+                <span className="text-white px-2 py-1 rounded-full text-sm">
                   User is not following any tags
                 </span>
               )}
@@ -178,13 +236,56 @@ export default function ProfilePage({ params }) {
                 </span>
               ))
             ) : (
-              <span className=" text-white px-2 py-1 rounded-full text-sm">
+              <span className="text-white px-2 py-1 rounded-full text-sm">
                 No badges to display
               </span>
             )}
           </div>
         </div>
       </div>
+      {selectedImage && !isCropping && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-gray-800 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold mb-4 text-white">Preview</h3>
+            <img src={selectedImage} alt="Preview" className="max-w-sm mb-4" />
+            <div className="flex justify-between space-x-4">
+              <Button
+                onClick={() => setIsCropping(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Crop Image
+              </Button>
+              <Button
+                onClick={() => handleImageUpload(selectedImage)}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                Upload Without Cropping
+              </Button>
+              <Button
+                onClick={() => setSelectedImage(null)}
+                className="bg-gray-600 hover:bg-gray-700 text-white border border-gray-500"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      {isCropping && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-gray-800 p-4 rounded-lg">
+            <ImageCropper
+              image={selectedImage}
+              onCropComplete={handleCropComplete}
+            />
+          </div>
+        </div>
+      )}
+      {isUploadingImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="text-white">Uploading image...</div>
+        </div>
+      )}
     </div>
   );
 }
