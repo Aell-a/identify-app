@@ -96,15 +96,17 @@ public class UserService {
     }
 
     // Updates user profile
-    public Optional<Profile> updateProfile(Long id, Profile updatedProfile) {
-        return userRepository.findById(id)
-                .map(user -> {
-                    User updatedUser = userMapper.toUser(user, updatedProfile);
-                    updatedUser.setLastActivity(LocalDateTime.now());
-                    User savedUser = userRepository.save(updatedUser);
-                    return userMapper.toProfile(savedUser);
-                });
-
+    public Profile updateProfile(Long id, Profile updatedProfile) {
+        Optional<User> userOptional = userRepository.findById(id);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            User updatedUser = userMapper.toUser(user, updatedProfile);
+            updatedUser.setLastActivity(LocalDateTime.now());
+            userRepository.save(updatedUser);
+            return userMapper.toProfile(updatedUser);
+        } else {
+            return null;
+        }
     }
 }
 

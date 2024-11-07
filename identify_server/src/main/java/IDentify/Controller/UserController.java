@@ -97,9 +97,11 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long userId = (Long) authentication.getPrincipal();
 
-        Optional<Profile> updatedUser = userService.updateProfile(userId, updatedProfile);
-        return updatedUser
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Profile updatedUser = userService.updateProfile(userId, updatedProfile);
+        if (updatedUser != null) {
+            return ResponseEntity.ok(updatedUser);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

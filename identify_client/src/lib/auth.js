@@ -73,7 +73,8 @@ export function AuthProvider({ children }) {
     if (response.success) {
       dispatch({ type: "AUTH_SUCCESS", payload: response.data });
     } else {
-      dispatch({ type: "AUTH_FAILURE", payload: response.error });
+      dispatch({ type: "LOGOUT" });
+      localStorage.removeItem("token");
     }
   };
 

@@ -63,7 +63,16 @@ export const verify = async (token) => {
 };
 
 export const getProfile = async (id) => {
-  const response = await api.get(`/users/${id}`);
+  const response = await api.get(`/users/profile/${id}`);
+  if (response.status !== 404) {
+    return response.data;
+  }
+};
+
+export const editProfile = async (profile, token) => {
+  const response = await api.put(`/users/profile/edit`, profile, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   if (response.status !== 404) {
     return response.data;
   }

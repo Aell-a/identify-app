@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import Image from "next/image";
-import { getProfile } from "@/lib/middleware";
+import { editProfile, getProfile } from "@/lib/middleware";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 export default function ProfilePage({ params }) {
   const { user, id } = useAuth();
   const [profile, setProfile] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedBio, setEditedBio] = useState("");
+  const [editedProfilePicture, setEditedProfilePicture] = useState("");
 
   async function fetchData(id) {
     try {
@@ -28,6 +30,10 @@ export default function ProfilePage({ params }) {
         followedTags: response.followedTags,
         badges: response.badges,
       });
+      if (profile) {
+        setEditedBio(profile.bio);
+        setEditedProfilePicture(profile.profilePicture);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -56,14 +62,38 @@ export default function ProfilePage({ params }) {
     return Math.floor(seconds) + " seconds";
   };
 
+  const handleSaveProfile = async () => {
+    try {
+      profile.bio = editedBio;
+      profile.profilePicture = editedProfilePicture;
+      const token = localStorage.getItem("token");
+      const updatedProfile = await editProfile(profile, token);
+      setProfile(updatedProfile);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Failed to save profile:", error);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-gray-800 rounded-lg shadow-xl p-8">
         <div className="flex justify-between">
           <div className="flex items-center space-x-8">
             <div className="relative w-32 h-32 rounded-full overflow-hidden">
+              {isEditing ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                  <input
+                    type="text"
+                    value={editedProfilePicture}
+                    onChange={(e) => setEditedProfilePicture(e.target.value)}
+                    className="w-full p-2 bg-gray-700 text-white text-sm"
+                    placeholder="Enter image URL"
+                  />
+                </div>
+              ) : null}
               <Image
-                src={profile.profilePicture}
+                src={isEditing ? editedProfilePicture : profile.profilePicture}
                 alt={profile.nickname}
                 layout="fill"
                 objectFit="cover"
@@ -71,15 +101,34 @@ export default function ProfilePage({ params }) {
             </div>
             <div>
               <h1 className="text-3xl font-bold">{profile.nickname}</h1>
-              <p className="text-gray-400 mt-2">{profile.bio}</p>
+              {isEditing ? (
+                <textarea
+                  value={editedBio}
+                  onChange={(e) => setEditedBio(e.target.value)}
+                  className="w-full p-2 bg-gray-700 text-white rounded mt-2"
+                  rows={3}
+                />
+              ) : (
+                <p className="text-gray-400 mt-2">{profile.bio}</p>
+              )}
             </div>
           </div>
           <div>
             {profile.id === id && (
               <div>
-                <Link href={"/profile/edit"}>
-                  <Button>Edit Profile</Button>
-                </Link>
+                {isEditing ? (
+                  <Button onClick={handleSaveProfile}>Save Profile</Button>
+                ) : (
+                  <Button
+                    onClick={() => {
+                      setIsEditing(true);
+                      setEditedBio(profile.bio);
+                      setEditedProfilePicture(profile.profilePicture);
+                    }}
+                  >
+                    Edit Profile
+                  </Button>
+                )}
               </div>
             )}
           </div>
