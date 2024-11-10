@@ -8,10 +8,12 @@ import lombok.Builder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
-@Table(name = "users")
+@Table(name = "\"user\"")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -45,8 +47,13 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime lastActivity = LocalDateTime.now(); // Timestamp for the last activity
 
-    @ElementCollection
-    private List<Long> followedTags = new ArrayList<>(); // Tag IDs for followed tags
+    @ManyToMany
+    @JoinTable(
+            name = "user_followed_tags",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> followedTags = new HashSet<>();
 
     @ElementCollection
     private List<Long> interests = new ArrayList<>(); // Tag IDs for interests
@@ -70,7 +77,7 @@ public class User {
     private int downvote = 0; // Total downvote received
 
     @Column(nullable = false)
-    private boolean isDeleted = false; // Soft delete flag
+    private boolean isDeleted = false;
 
     public User(String nickname, String email, String password) {
         this.nickname = nickname;
