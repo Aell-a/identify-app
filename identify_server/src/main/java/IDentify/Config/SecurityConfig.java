@@ -46,13 +46,16 @@ public class SecurityConfig {
                                 "/api/users/profile/{id}",
                                 "/api/users/register",
                                 "/api/users/login",
+                                "/api/users/verify",
                                 "/api/users/checkByEmail",
-                                "/api/users/checkByNickname"
+                                "/api/users/checkByNickname",
+                                "/api/media/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .headers(headers -> headers.frameOptions().disable());
 
         return http.build();
     }

@@ -2,6 +2,7 @@ package IDentify.Service;
 
 import IDentify.Entity.Media;
 import org.apache.commons.io.FilenameUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,10 +17,15 @@ import java.util.UUID;
 @Service
 public class MediaService {
 
-    private final Path rootLocation = Paths.get("uploads");
+    @Value("${file.storage.location}")
+    private String fileStorageLocation;
+
+    @Value("${file.base-url}")
+    private String fileBaseUrl;
 
     public Media uploadMedia(MultipartFile file, Long userId) throws IOException {
-        Path userDirectory = this.rootLocation.resolve(String.valueOf(userId));
+        Path rootLocation = Paths.get(fileStorageLocation);
+        Path userDirectory = rootLocation.resolve(String.valueOf(userId));
 
         Files.createDirectories(userDirectory);
 
@@ -27,8 +33,10 @@ public class MediaService {
         Path destinationFile = userDirectory.resolve(filename);
         Files.copy(file.getInputStream(), destinationFile, StandardCopyOption.REPLACE_EXISTING);
 
+        String mediaUrl = fileBaseUrl + userId + "/" + filename;
+
         Media media = new Media();
-        media.setMediaUrl(destinationFile.toString());
+        media.setMediaUrl(mediaUrl);
         media.setMediaType(Objects.requireNonNull(file.getContentType()));
         media.setMediaFormat(Objects.requireNonNull(FilenameUtils.getExtension(file.getOriginalFilename())));
         return media;

@@ -34,7 +34,14 @@ public class JwtUtil {
     public boolean isTokenValid(String token) {
         try {
             DecodedJWT decodedJWT = decodeToken(token);
-            return !isTokenExpired(decodedJWT);
+            if (isTokenExpired(decodedJWT)) {
+                return false;
+            }
+            Long userId = decodedJWT.getClaim("UserId").asLong();
+            if (userId == null) {
+                return false;
+            }
+            return true;
         } catch (Exception e) {
             return false;
         }

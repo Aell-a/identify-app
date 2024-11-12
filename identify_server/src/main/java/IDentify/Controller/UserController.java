@@ -6,6 +6,7 @@ import IDentify.DTO.Auth.LoginRequest;
 import IDentify.DTO.Auth.RegisterRequest;
 import IDentify.DTO.User.Profile;
 import IDentify.Service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,6 +28,9 @@ public class UserController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     // Login user with email/nickname and password
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
@@ -46,7 +50,7 @@ public class UserController {
             Long userId = jwtUtil.getUserIdFromToken(token);
             String nickname = userService.getNicknameById(userId);
             if (userService.checkUser(userId)) {
-                return ResponseEntity.ok(new AuthResponse(true, token , userId, nickname));
+                return ResponseEntity.ok(new AuthResponse(true, token, userId, nickname));
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(false, "Invalid or expired token"));
             }
@@ -96,16 +100,24 @@ public class UserController {
     // Update user by ID
     @PutMapping(value = "/profile/edit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Profile> updateUser(
-            @RequestPart("profile") Profile updatedProfile,
+            @RequestPart(value = "profile", required = true) String profileJson,
             @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture) throws IOException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = (Long) authentication.getPrincipal();
+        try {
+            Profile updatedProfile = objectMapper.readValue(profileJson, Profile.class);
 
-        if (profilePicture != null && !profilePicture.isEmpty()) {
-            userService.updateProfilePicture(userId , profilePicture);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Long userId = (Long) authentication.getPrincipal();
+
+            if (profilePicture != null && !profilePicture.isEmpty()) {
+                userService.updateProfilePicture(userId, profilePicture);
+            }
+
+            Profile updatedUser = userService.updateProfile(userId, updatedProfile);
+            return updatedUser != null ? ResponseEntity.ok(updatedUser)
+                    : ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
         }
-        Profile updatedUser = userService.updateProfile(userId, updatedProfile);
-        return updatedUser != null ? ResponseEntity.ok(updatedUser)
-                : ResponseEntity.notFound().build();
     }
 }

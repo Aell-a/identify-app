@@ -27,6 +27,7 @@ public class JwtFilter extends OncePerRequestFilter {
         try {
             String authorizationHeader = request.getHeader("Authorization");
 
+
             if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
                 String token = authorizationHeader.substring(7);
                 if (jwtUtil.isTokenValid(token)) {
@@ -36,6 +37,8 @@ public class JwtFilter extends OncePerRequestFilter {
                             new UsernamePasswordAuthenticationToken(userId, null, new ArrayList<>());
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+
                 }
             }
         } catch (Exception e) {
