@@ -6,8 +6,8 @@ import { AuthProvider } from "@/lib/auth";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "NextJS Demo App",
-  description: "A demo application with Next.js, Tailwind, and more",
+  title: "IDentify",
+  description: "Join our community and get your mystery objects identified",
 };
 
 export default function RootLayout({ children }) {
