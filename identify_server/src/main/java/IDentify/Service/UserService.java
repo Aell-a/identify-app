@@ -5,6 +5,7 @@ import IDentify.DTO.Auth.AuthResponse;
 import IDentify.DTO.Auth.RegisterRequest;
 import IDentify.DTO.User.MiniProfile;
 import IDentify.DTO.User.Profile;
+import IDentify.Entity.Media;
 import IDentify.Entity.User;
 import IDentify.Mapper.UserMapper;
 import IDentify.Repository.UserRepository;
@@ -12,7 +13,9 @@ import IDentify.Config.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -28,6 +31,8 @@ public class UserService {
     private JwtUtil jwtUtil;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private MediaService mediaService;
 
     // Checks nickname uniqueness
     public boolean isNicknameInUse(String nickname) {
@@ -97,15 +102,25 @@ public class UserService {
 
     // Updates user profile
     public Profile updateProfile(Long id, Profile updatedProfile) {
-        Optional<User> userOptional = userRepository.findById(id);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            User updatedUser = userMapper.toUser(user, updatedProfile);
-            updatedUser.setLastActivity(LocalDateTime.now());
-            userRepository.save(updatedUser);
-            return userMapper.toProfile(updatedUser);
-        } else {
-            return null;
+        User user = userRepository.findById(id).orElse(null);
+
+        if (user != null) {
+            user.setBio(updatedProfile.getBio());
+            userRepository.save(user);
+            return userMapper.toProfile(user);
+        }
+        return null;
+    }
+
+    public void updateProfilePicture(Long id, MultipartFile profilePicture) throws IOException {
+        User user = userRepository.findById(id).orElse(null);
+        if (user != null) {
+            if (profilePicture != null && !profilePicture.isEmpty()) {
+                Media profileMedia = mediaService.uploadMedia(profilePicture, id);
+                user.setProfilePicture(profileMedia.getMediaUrl());
+            }
+
+            userRepository.save(user);
         }
     }
 }

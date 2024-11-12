@@ -8,12 +8,14 @@ import IDentify.DTO.User.Profile;
 import IDentify.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Optional;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/users")
@@ -92,16 +94,18 @@ public class UserController {
     }
 
     // Update user by ID
-    @PutMapping("/profile/edit")
-    public ResponseEntity<Profile> updateUser(@RequestBody Profile updatedProfile) {
+    @PutMapping(value = "/profile/edit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Profile> updateUser(
+            @RequestPart("profile") Profile updatedProfile,
+            @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture) throws IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long userId = (Long) authentication.getPrincipal();
 
-        Profile updatedUser = userService.updateProfile(userId, updatedProfile);
-        if (updatedUser != null) {
-            return ResponseEntity.ok(updatedUser);
-        } else {
-            return ResponseEntity.notFound().build();
+        if (profilePicture != null && !profilePicture.isEmpty()) {
+            userService.updateProfilePicture(userId , profilePicture);
         }
+        Profile updatedUser = userService.updateProfile(userId, updatedProfile);
+        return updatedUser != null ? ResponseEntity.ok(updatedUser)
+                : ResponseEntity.notFound().build();
     }
 }
