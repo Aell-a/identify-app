@@ -26,6 +26,7 @@ function authReducer(state, action) {
         ...state,
         id: action.payload.id,
         user: action.payload.nickname,
+        token: action.payload.token,
         isLoading: false,
         error: null,
       };
@@ -34,6 +35,7 @@ function authReducer(state, action) {
         ...state,
         id: action.payload.id,
         user: action.payload.nickname,
+        token: action.payload.token,
         isLoading: false,
         error: null,
       };
@@ -42,13 +44,14 @@ function authReducer(state, action) {
         ...state,
         id: action.payload.id,
         user: action.payload.nickname,
+        token: action.payload.token,
         isLoading: false,
         error: null,
       };
     case "LOGOUT":
-      return { ...state, id: null, user: null };
+      return { ...initialState };
     case "AUTH_FAILURE":
-      return { ...state, error: action.payload, isLoading: false };
+      return { ...initialState, error: action.payload, isLoading: false };
     case "LOADING":
       return { ...state, isLoading: true };
     default:
@@ -66,15 +69,22 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  useEffect(() => {
+    if (state.token) {
+      localStorage.setItem("token", state.token);
+    } else {
+      localStorage.removeItem("token");
+    }
+  }, [state.token]);
+
   const verifyToken = async (token) => {
     dispatch({ type: "LOADING" });
     const response = await verify(token);
 
     if (response.success) {
-      dispatch({ type: "AUTH_SUCCESS", payload: response.data });
+      dispatch({ type: "AUTH_SUCCESS", payload: { ...response.data, token } });
     } else {
       dispatch({ type: "LOGOUT" });
-      localStorage.removeItem("token");
     }
   };
 
@@ -83,7 +93,6 @@ export function AuthProvider({ children }) {
     try {
       const response = await login(identifier, password);
       if (response.success) {
-        localStorage.setItem("token", response.data.token);
         dispatch({ type: "LOGIN", payload: response.data });
       } else {
         dispatch({
@@ -91,17 +100,17 @@ export function AuthProvider({ children }) {
           payload: response.error,
         });
       }
-      return response.data;
+      return response;
     } catch (error) {
       dispatch({
         type: "AUTH_FAILURE",
         payload: "An unexpected error occurred",
       });
+      return { success: false, error: "An unexpected error occured" };
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
     dispatch({ type: "LOGOUT" });
   };
 
@@ -111,7 +120,6 @@ export function AuthProvider({ children }) {
       const response = await register(nickname, email, password);
 
       if (response.success) {
-        localStorage.setItem("token", response.data.token);
         dispatch({ type: "SIGNUP", payload: response.data });
       } else {
         dispatch({
@@ -119,11 +127,13 @@ export function AuthProvider({ children }) {
           payload: response.error,
         });
       }
+      return response;
     } catch (error) {
       dispatch({
         type: "AUTH_FAILURE",
         payload: "An unexpected error occurred",
       });
+      return { success: false, error: "An unexpected error occured" };
     }
   };
 

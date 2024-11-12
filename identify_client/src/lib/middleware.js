@@ -68,21 +68,33 @@ export const getProfile = async (id) => {
   }
 };
 
-export const editProfile = async (profile) => {
-  const token = localStorage.getItem("token");
-  const response = await api.put(`/users/profile/edit`, profile, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (response.status !== 404) {
-    return response.data;
-  }
-};
+export const editProfile = async (profile, profilePicture = null, token) => {
+  return await handleApiResponse(async () => {
+    const formData = new FormData();
 
-export const editProfilePicture = async (id, formData) => {
-  const token = localStorage.getItem("token");
-  const response = await api.put(`/media/profile/${id}`, formData, {
-    headers: { Authorization: `Bearer ${token}` },
+    formData.append(
+      "profile",
+      JSON.stringify({
+        id: profile.id,
+        nickname: profile.nickname,
+        bio: profile.bio,
+        followedTags: profile.followedTags || [],
+        badges: profile.badges || [],
+        totalPoints: profile.totalPoints,
+        accountCreated: profile.accountCreated,
+        lastActivity: profile.lastActivity,
+        profilePicture: profile.profilePicture,
+      })
+    );
+
+    if (profilePicture) {
+      formData.append("profilePicture", profilePicture, "profile-image.jpg");
+    }
+    return await api.put("/users/profile/edit", formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
   });
-  if (!response.ok) throw new Error("Failed to upload profile picture");
-  return response.json();
 };

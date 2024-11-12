@@ -3,19 +3,21 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/lib/auth";
 import Image from "next/image";
-import { editProfile, getProfile, editProfilePicture } from "@/lib/middleware";
+import { editProfile, getProfile } from "@/lib/middleware";
 import { Button } from "@/components/ui/button";
 import ImageCropper from "@/app/components/imageCropper";
 import { readAndCompressImage } from "browser-image-resizer";
 
 export default function ProfilePage({ params }) {
-  const { id } = useAuth();
+  const { id, token } = useAuth();
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedBio, setEditedBio] = useState("");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isCropping, setIsCropping] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [processedImage, setProcessedImage] = useState(null);
 
   const fetchProfile = useCallback(async (id) => {
     try {
@@ -33,8 +35,17 @@ export default function ProfilePage({ params }) {
     fetchProfile(params.id);
   }, [params.id, fetchProfile]);
 
-  const timeSinceLastActivity = useCallback((date) => {
-    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+  const timeSinceLastActivity = useCallback((dateArray) => {
+    // Convert array format to Date object
+    const date = new Date(
+      dateArray[0],
+      dateArray[1] - 1,
+      dateArray[2],
+      dateArray[3],
+      dateArray[4],
+      dateArray[5]
+    );
+    const seconds = Math.floor((new Date() - date) / 1000);
     let interval = seconds / 31536000;
     if (interval > 1) return Math.floor(interval) + " years";
     interval = seconds / 2592000;
@@ -48,15 +59,40 @@ export default function ProfilePage({ params }) {
     return Math.floor(seconds) + " seconds";
   }, []);
 
+  const formatDate = useCallback((dateArray) => {
+    const date = new Date(
+      dateArray[0],
+      dateArray[1] - 1,
+      dateArray[2],
+      dateArray[3],
+      dateArray[4],
+      dateArray[5]
+    );
+    return date.toLocaleDateString();
+  }, []);
+
   const handleSaveProfile = useCallback(async () => {
     try {
-      const updatedProfile = await editProfile({ ...profile, bio: editedBio });
-      setProfile(updatedProfile);
-      setIsEditing(false);
+      const response = await editProfile(
+        { ...profile, bio: editedBio },
+        processedImage,
+        token
+      );
+
+      if (response.success) {
+        setProfile(response.data);
+        setIsEditing(false);
+        setProcessedImage(null);
+        setPreviewImage(null);
+      } else {
+        console.error("Failed to save profile:", response.error);
+        // Optionally show error to user
+      }
     } catch (error) {
       console.error("Failed to save profile:", error);
+      // Optionally show error to user
     }
-  }, [profile, editedBio]);
+  }, [profile, editedBio, processedImage]);
 
   const handleFileUpload = useCallback((e) => {
     const file = e.target.files[0];
@@ -67,48 +103,49 @@ export default function ProfilePage({ params }) {
       }
       const reader = new FileReader();
       reader.onloadend = () => {
-        setSelectedImage(reader.result);
+        setSelectedImage({
+          dataUrl: reader.result,
+          file: file, // Store the original file
+        });
       };
       reader.readAsDataURL(file);
     }
   }, []);
 
-  const handleImageUpload = useCallback(
-    async (imageToUpload) => {
-      setIsUploadingImage(true);
-      try {
-        const config = {
-          quality: 0.7,
-          maxWidth: 500,
-          maxHeight: 500,
-          autoRotate: true,
-          debug: true,
-        };
+  const processImage = useCallback(async (imageToProcess) => {
+    setIsUploadingImage(true);
+    try {
+      const config = {
+        quality: 0.7,
+        maxWidth: 500,
+        maxHeight: 500,
+        autoRotate: true,
+        debug: true,
+      };
 
-        const resizedImage = await readAndCompressImage(imageToUpload, config);
+      // Use the original file instead of the data URL
+      const fileToProcess = imageToProcess.file || imageToProcess;
+      const resizedImage = await readAndCompressImage(fileToProcess, config);
+      setProcessedImage(resizedImage);
 
-        const formData = new FormData();
-        formData.append("file", resizedImage, "profile_picture.jpg");
-
-        await editProfilePicture(id, formData);
-        await fetchProfile(params.id);
-      } catch (error) {
-        console.error("Failed to upload profile picture:", error);
-      }
-      setIsUploadingImage(false);
-      setSelectedImage(null);
-    },
-    [id, params.id, fetchProfile]
-  );
+      // Create preview URL for the processed image
+      const previewUrl = URL.createObjectURL(resizedImage);
+      setPreviewImage(previewUrl);
+    } catch (error) {
+      console.error("Failed to process image:", error);
+    }
+    setIsUploadingImage(false);
+    setSelectedImage(null);
+  }, []);
 
   const handleCropComplete = useCallback(
     (croppedImage) => {
       if (croppedImage) {
-        handleImageUpload(croppedImage);
+        processImage(croppedImage);
       }
       setIsCropping(false);
     },
-    [handleImageUpload]
+    [processImage]
   );
 
   if (!profile) {
@@ -121,9 +158,9 @@ export default function ProfilePage({ params }) {
         <div className="flex justify-between">
           <div className="flex items-center space-x-8">
             <div className="relative w-32 h-32 rounded-full overflow-hidden">
-              {profile.profilePicture ? (
+              {previewImage || profile.profilePicture ? (
                 <Image
-                  src={profile.profilePicture}
+                  src={previewImage || profile.profilePicture}
                   alt={profile.nickname}
                   layout="fill"
                   objectFit="cover"
@@ -195,9 +232,7 @@ export default function ProfilePage({ params }) {
         <div className="mt-8 grid grid-cols-2 gap-4">
           <div>
             <h2 className="text-xl font-semibold mb-2">Account Info</h2>
-            <p>
-              Created: {new Date(profile.accountCreated).toLocaleDateString()}
-            </p>
+            <p>Created: {formatDate(profile.accountCreated)}</p>
             <p>
               Last activity: {timeSinceLastActivity(profile.lastActivity)} ago
             </p>
@@ -247,7 +282,11 @@ export default function ProfilePage({ params }) {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-gray-800 p-4 rounded-lg">
             <h3 className="text-lg font-semibold mb-4 text-white">Preview</h3>
-            <img src={selectedImage} alt="Preview" className="max-w-sm mb-4" />
+            <img
+              src={selectedImage.dataUrl}
+              alt="Preview"
+              className="max-w-sm mb-4"
+            />
             <div className="flex justify-between space-x-4">
               <Button
                 onClick={() => setIsCropping(true)}
@@ -256,10 +295,10 @@ export default function ProfilePage({ params }) {
                 Crop Image
               </Button>
               <Button
-                onClick={() => handleImageUpload(selectedImage)}
+                onClick={() => processImage(selectedImage)}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
-                Upload Without Cropping
+                Use Without Cropping
               </Button>
               <Button
                 onClick={() => setSelectedImage(null)}
@@ -283,7 +322,7 @@ export default function ProfilePage({ params }) {
       )}
       {isUploadingImage && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="text-white">Uploading image...</div>
+          <div className="text-white">Processing image...</div>
         </div>
       )}
     </div>

@@ -19,10 +19,10 @@ export default function AuthPopup({ onClose }) {
 
     if (isLogin) {
       const result = await login(email, password);
-      if (!user) {
-        setErrors({ form: error });
-      } else {
+      if (result.success) {
         onClose();
+      } else {
+        setErrors(result.data);
       }
     } else {
       if (password !== retypePassword) {
@@ -43,10 +43,10 @@ export default function AuthPopup({ onClose }) {
       }
 
       const result = await signup(nickname, email, password);
-      if (!user) {
-        setErrors({ form: error });
-      } else {
+      if (result.success) {
         onClose();
+      } else {
+        setErrors(result.data);
       }
     }
   };
@@ -90,9 +90,26 @@ export default function AuthPopup({ onClose }) {
           {isLogin ? "Login" : "Register"}
         </h2>
         <form onSubmit={handleSubmit}>
-          {renderInput("email", "email", "Email", email, setEmail)}
-          {!isLogin &&
-            renderInput("nickname", "text", "Nickname", nickname, setNickname)}
+          {isLogin ? (
+            renderInput(
+              "email",
+              "text",
+              "Enter Email or Nickname",
+              email,
+              setEmail
+            )
+          ) : (
+            <>
+              {renderInput("email", "email", "Email", email, setEmail)}
+              {renderInput(
+                "nickname",
+                "text",
+                "Nickname",
+                nickname,
+                setNickname
+              )}
+            </>
+          )}
           {renderInput(
             "password",
             "password",
@@ -101,7 +118,6 @@ export default function AuthPopup({ onClose }) {
             setPassword
           )}
           {!isLogin &&
-            renderInput("email", "email", "Email", email, setEmail) &&
             renderInput(
               "retypePassword",
               "password",
