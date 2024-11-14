@@ -49,7 +49,8 @@ public class SecurityConfig {
                                 "/api/users/verify",
                                 "/api/users/checkByEmail",
                                 "/api/users/checkByNickname",
-                                "/api/media/**"
+                                "/api/media/**",
+                                "/api/posts/main"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

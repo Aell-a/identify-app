@@ -91,13 +91,16 @@ public class UserService {
     }
 
     // Gets user profile information by id
-    public Optional<Profile> getProfile(Long id) {
-        return userRepository.findById(id).map(userMapper::toProfile);
+    public Profile getProfile(Long id) {
+
+        Optional<User> user = userRepository.findById(id);
+        return user.map(userMapper::toProfile).orElse(null);
     }
 
     // Gets user mini profile information by id
-    public Optional<MiniProfile> getMiniProfile(Long id) {
-        return userRepository.findById(id).map(userMapper::toMiniProfile);
+    public MiniProfile getMiniProfile(Long id) {
+        Optional<User> user = userRepository.findById(id);
+        return user.map(userMapper::toMiniProfile).orElse(null);
     }
 
     // Updates user profile

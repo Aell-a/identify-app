@@ -16,8 +16,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -61,9 +59,12 @@ public class UserController {
     // Get user by ID
     @GetMapping("/profile/{id}")
     public ResponseEntity<Profile> getUserById(@PathVariable Long id) {
-        return userService.getProfile(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Profile profile = userService.getProfile(id);
+        if (profile != null) {
+            return ResponseEntity.ok(profile);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     // Check if email is unique
@@ -100,8 +101,8 @@ public class UserController {
     // Update user by ID
     @PutMapping(value = "/profile/edit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Profile> updateUser(
-            @RequestPart(value = "profile", required = true) String profileJson,
-            @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture) throws IOException {
+            @RequestPart(value = "profile") String profileJson,
+            @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture) {
         try {
             Profile updatedProfile = objectMapper.readValue(profileJson, Profile.class);
 

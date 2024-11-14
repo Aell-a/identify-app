@@ -3,9 +3,11 @@ package IDentify.DTO.Post;
 import IDentify.DTO.User.MiniProfile;
 import IDentify.Entity.PostStatus;
 import IDentify.Entity.Tag;
+import IDentify.Entity.WikidataLabel;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -26,4 +28,13 @@ public class PostDTO {
     private int totalPoints;
     private Set<Tag> tags;
     private MiniProfile user;
+    private List<String> imageUrls;
+    private double weight;
+    private double sizeX;
+    private double sizeY;
+    private double sizeZ;
+    private List<String> colors;
+    private List<String> shapes;
+    private List<String> materials;
+    private List<WikidataLabel> wikidataLabels;
 }

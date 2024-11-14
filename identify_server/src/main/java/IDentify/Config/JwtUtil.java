@@ -38,10 +38,7 @@ public class JwtUtil {
                 return false;
             }
             Long userId = decodedJWT.getClaim("UserId").asLong();
-            if (userId == null) {
-                return false;
-            }
-            return true;
+            return userId != null;
         } catch (Exception e) {
             return false;
         }
