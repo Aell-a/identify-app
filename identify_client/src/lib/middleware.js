@@ -98,3 +98,27 @@ export const editProfile = async (profile, profilePicture = null, token) => {
     });
   });
 };
+
+export const getMainPagePosts = async (page, size = 5) => {
+  return await handleApiResponse(() =>
+    api.get(`/posts/main`, {
+      params: { page, size },
+    })
+  );
+};
+
+export const getUserPosts = async (userId) => {
+  return await handleApiResponse(() => api.get(`/posts/user/${userId}`));
+};
+
+export const getPostsByTag = async (tagId) => {
+  return await handleApiResponse(() => api.get(`/posts/tag/${tagId}`));
+};
+
+export const getPost = async (postId) => {
+  return await handleApiResponse(() => api.get(`/posts/${postId}`));
+};
+
+export const createPost = async (postData) => {
+  return await handleApiResponse(() => api.post(`/posts/create`, postData));
+};
