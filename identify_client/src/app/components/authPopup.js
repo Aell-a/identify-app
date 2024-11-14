@@ -10,35 +10,37 @@ export default function AuthPopup({ onClose }) {
   const [password, setPassword] = useState("");
   const [retypePassword, setRetypePassword] = useState("");
   const [nickname, setNickname] = useState("");
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState([]);
   const { login, signup, user, error } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrors({});
+    setErrors([]);
 
     if (isLogin) {
       const result = await login(email, password);
+      console.log(result);
       if (result.success) {
         onClose();
       } else {
-        setErrors(result.data);
+        console.log(result.error);
+        setErrors([result.error]);
       }
     } else {
       if (password !== retypePassword) {
-        setErrors({ retypePassword: "Passwords do not match" });
+        setErrors(["Passwords do not match"]);
         return;
       }
 
       const isEmailValid = await checkEmail(email);
       if (!isEmailValid) {
-        setErrors({ email: "Email is already in use" });
+        setErrors(["Email is already in use"]);
         return;
       }
 
       const isNicknameValid = await checkNickname(nickname);
       if (!isNicknameValid) {
-        setErrors({ nickname: "Nickname is already taken" });
+        setErrors(["Nickname is already taken"]);
         return;
       }
 
@@ -46,7 +48,7 @@ export default function AuthPopup({ onClose }) {
       if (result.success) {
         onClose();
       } else {
-        setErrors(result.data);
+        setErrors([result.error]);
       }
     }
   };
@@ -59,23 +61,14 @@ export default function AuthPopup({ onClose }) {
         value={value}
         onChange={(e) => {
           onChange(e.target.value);
-          setErrors({});
+          setErrors([]);
         }}
-        className={`w-full p-2 bg-gray-700 text-white rounded ${
-          errors[name] ? "border-red-500" : "border-gray-600"
+        className={`w-full p-2 bg-gray-700 text-white rounded-lg ${
+          errors.length > 0 ? "border-red-500" : "border-gray-600"
         }`}
-        aria-invalid={errors[name] ? "true" : "false"}
-        aria-describedby={errors[name] ? `${name}-error` : undefined}
+        aria-invalid={errors.length > 0 ? "true" : "false"}
+        aria-describedby={errors.length > 0 ? "form-error" : undefined}
       />
-      {errors[name] && (
-        <p
-          className="text-red-500 text-sm mt-1"
-          id={`${name}-error`}
-          role="alert"
-        >
-          {errors[name]}
-        </p>
-      )}
     </div>
   );
 
@@ -92,11 +85,11 @@ export default function AuthPopup({ onClose }) {
         <form onSubmit={handleSubmit}>
           {isLogin ? (
             renderInput(
-              "email",
+              "nickname",
               "text",
-              "Enter Email or Nickname",
-              email,
-              setEmail
+              "Enter nickname",
+              nickname,
+              setNickname
             )
           ) : (
             <>
@@ -125,9 +118,13 @@ export default function AuthPopup({ onClose }) {
               retypePassword,
               setRetypePassword
             )}
-          {errors.form && (
-            <p className="text-red-500 text-sm mb-4" role="alert">
-              {errors.form}
+          {errors.length > 0 && (
+            <p
+              className="text-red-500 text-sm mb-4"
+              id="form-error"
+              role="alert"
+            >
+              {errors[0]}
             </p>
           )}
           <div className="flex justify-between">
