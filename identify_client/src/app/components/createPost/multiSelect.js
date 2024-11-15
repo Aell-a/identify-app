@@ -1,14 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
@@ -17,52 +10,68 @@ import {
 
 export default function MultiSelect({ items, selectedItems, onChange }) {
   const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState(selectedItems || []);
+
+  useEffect(() => {
+    setSelected(selectedItems || []);
+  }, [selectedItems]);
 
   const handleSelect = (item) => {
-    const updatedItems = selectedItems.includes(item)
-      ? selectedItems.filter((i) => i !== item)
-      : [...selectedItems, item];
+    const updatedItems = selected.includes(item)
+      ? selected.filter((i) => i !== item)
+      : [...selected, item];
+    setSelected(updatedItems);
     onChange(updatedItems);
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={setOpen} className="w-full">
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between bg-gray-700 text-gray-100"
+          className="w-full justify-between bg-gray-700 text-gray-100 border-none"
         >
-          {selectedItems.length > 0
-            ? `${selectedItems.length} selected`
+          {selected.length > 0
+            ? `${selected.length} selected`
             : "Select items..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
-        <Command className="bg-gray-800 text-gray-100">
-          <CommandInput placeholder="Search items..." className="bg-gray-700" />
-          <CommandEmpty>No item found.</CommandEmpty>
-          <CommandGroup>
-            {items.map((item) => (
-              <CommandItem
-                key={item}
-                onSelect={() => handleSelect(item)}
-                className="cursor-pointer"
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    selectedItems.includes(item) ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                {item}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </Command>
+      <PopoverContent className="w-full p-0 bg-gray-800 text-gray-100">
+        <div
+          className="max-h-[300px] overflow-y-auto custom-scrollbar"
+          onWheel={(e) => (e.currentTarget.scrollTop += e.deltaY)}
+        >
+          {items.map((item) => (
+            <div
+              key={item}
+              onClick={() => handleSelect(item)}
+              className="flex items-center p-2 hover:bg-gray-700 cursor-pointer"
+            >
+              <div className="w-4 h-4 mr-2">
+                {selected.includes(item) && (
+                  <Check className="w-4 h-4 text-blue-500" />
+                )}
+              </div>
+              {item}
+            </div>
+          ))}
+        </div>
       </PopoverContent>
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #374151;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background-color: #4b5563;
+          border-radius: 4px;
+        }
+      `}</style>
     </Popover>
   );
 }

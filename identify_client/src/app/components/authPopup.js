@@ -18,7 +18,7 @@ export default function AuthPopup({ onClose }) {
     setErrors([]);
 
     if (isLogin) {
-      const result = await login(email, password);
+      const result = await login(nickname, password);
       console.log(result);
       if (result.success) {
         onClose();

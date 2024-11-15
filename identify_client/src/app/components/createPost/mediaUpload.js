@@ -1,16 +1,22 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function MediaUpload({ files, onChange }) {
+  const fileInputRef = useRef(null);
+
   const handleFileChange = (e) => {
-    const newFiles = [...files, ...e.target.files];
+    const newFiles = [...files, ...Array.from(e.target.files)];
     onChange(newFiles);
   };
 
   const handleRemoveFile = (index) => {
     const newFiles = files.filter((_, i) => i !== index);
     onChange(newFiles);
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current.click();
   };
 
   return (
@@ -21,18 +27,16 @@ export default function MediaUpload({ files, onChange }) {
           multiple
           onChange={handleFileChange}
           className="hidden"
-          id="media-upload"
+          ref={fileInputRef}
         />
-        <label htmlFor="media-upload" className="cursor-pointer">
-          <Button
-            type="button"
-            variant="outline"
-            className="bg-gray-700 text-gray-100"
-          >
-            <Upload className="mr-2 h-4 w-4" />
-            Upload Files
-          </Button>
-        </label>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleUploadClick}
+          className="bg-green-500 hover:bg-green-600 text-gray-100 border-none mt-1"
+        >
+          <Upload className=" h-4 w-4" />
+        </Button>
       </div>
       {files.length > 0 && (
         <ul className="space-y-2">
@@ -47,9 +51,9 @@ export default function MediaUpload({ files, onChange }) {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleRemoveFile(index)}
-                className="text-red-500 hover:text-red-700"
+                className="bg-red-600 hover:bg-red-400"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4 text-gray-100" />
               </Button>
             </li>
           ))}

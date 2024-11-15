@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -15,6 +17,9 @@ const unitConversions = {
 };
 
 export default function SizeInput({ value, onChange }) {
+  const [showWidth, setShowWidth] = useState(false);
+  const [showDepth, setShowDepth] = useState(false);
+
   const handleInputChange = (dimension, inputValue) => {
     const newSize = { ...value, [dimension]: inputValue };
     onChange(newSize);
@@ -32,39 +37,61 @@ export default function SizeInput({ value, onChange }) {
   };
 
   return (
-    <div className="flex items-center space-x-2">
-      <Input
-        type="number"
-        value={value.length}
-        onChange={(e) => handleInputChange("length", e.target.value)}
-        placeholder="Length"
-        className="bg-gray-700 text-gray-100"
-      />
-      <Input
-        type="number"
-        value={value.width}
-        onChange={(e) => handleInputChange("width", e.target.value)}
-        placeholder="Width"
-        className="bg-gray-700 text-gray-100"
-      />
-      <Input
-        type="number"
-        value={value.depth}
-        onChange={(e) => handleInputChange("depth", e.target.value)}
-        placeholder="Depth"
-        className="bg-gray-700 text-gray-100"
-      />
-      <Select value={value.unit} onValueChange={handleUnitChange}>
-        <SelectTrigger className="w-24">
-          <SelectValue placeholder="Unit" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="cm">cm</SelectItem>
-          <SelectItem value="m">m</SelectItem>
-          <SelectItem value="in">in</SelectItem>
-          <SelectItem value="ft">ft</SelectItem>
-        </SelectContent>
-      </Select>
+    <div className="space-y-2">
+      <div className="flex items-center space-x-2">
+        <Input
+          type="number"
+          value={value.length}
+          onChange={(e) => handleInputChange("length", e.target.value)}
+          placeholder="Length"
+          className="bg-gray-700 text-gray-100 border-none"
+        />
+        <Select value={value.unit} onValueChange={handleUnitChange}>
+          <SelectTrigger className="w-24 border-none">
+            <SelectValue placeholder="Unit" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="cm">cm</SelectItem>
+            <SelectItem value="m">m</SelectItem>
+            <SelectItem value="in">in</SelectItem>
+            <SelectItem value="ft">ft</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      {showWidth ? (
+        <Input
+          type="number"
+          value={value.width}
+          onChange={(e) => handleInputChange("width", e.target.value)}
+          placeholder="Width"
+          className="bg-gray-700 text-gray-100 border-none"
+        />
+      ) : (
+        <Button
+          variant="outline"
+          onClick={() => setShowWidth(true)}
+          className="w-full bg-gray-700 text-gray-100 border-none"
+        >
+          Add Width
+        </Button>
+      )}
+      {showDepth ? (
+        <Input
+          type="number"
+          value={value.depth}
+          onChange={(e) => handleInputChange("depth", e.target.value)}
+          placeholder="Depth"
+          className="bg-gray-700 text-gray-100 border-none"
+        />
+      ) : (
+        <Button
+          variant="outline"
+          onClick={() => setShowDepth(true)}
+          className="w-full bg-gray-700 text-gray-100 border-none"
+        >
+          Add Depth
+        </Button>
+      )}
     </div>
   );
 }

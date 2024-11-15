@@ -58,7 +58,7 @@ export default function WikidataSearch({ selectedLabels, onChange }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search Wikidata..."
-          className="bg-gray-700 text-gray-100"
+          className="bg-gray-700 text-gray-100 border-none"
         />
         <Button
           type="button"
