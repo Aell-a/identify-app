@@ -24,6 +24,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
+    "cross-spawn": "^7.0.5",
     "dotenv": "^16.4.5",
     "lodash": "^4.17.21",
     "lucide-react": "^0.453.0",
