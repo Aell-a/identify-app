@@ -11,6 +11,7 @@ import PostPopup from "./components/createPost/postPopup";
 import { getMainPagePosts } from "@/lib/middleware";
 import { debounce } from "lodash";
 import LoadingIndicator from "./components/loadingIndicatior";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [isAuthPopupOpen, setIsAuthPopupOpen] = useState(false);
@@ -20,6 +21,7 @@ export default function Home() {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const { user } = useAuth();
+  const router = useRouter();
 
   const loadInitialPosts = useCallback(async () => {
     setLoading(true);
@@ -79,9 +81,8 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [page, loading]);
 
-  const handlePostSubmit = (postData) => {
-    // TODO: Handle the submission of new post data
-    console.log("New post data submitted:", postData);
+  const handlePostSubmit = (formData) => {
+    console.log(formData);
     setIsPostPopupOpen(false);
   };
 

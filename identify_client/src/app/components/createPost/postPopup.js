@@ -78,7 +78,7 @@ export default function PostPopup({ isOpen, onClose, onSubmit }) {
     ];
 
     return {
-      userId: id, // You'll need to get this from your auth system
+      userId: id,
       title: formData.title,
       description: formData.description,
       weight: weightRanges[formData.weightRange],

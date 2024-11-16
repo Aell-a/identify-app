@@ -70,7 +70,7 @@ export default function SizeInput({ value, onChange }) {
         <Button
           variant="outline"
           onClick={() => setShowWidth(true)}
-          className="w-full bg-gray-700 text-gray-100 border-none"
+          className="w-24 bg-gray-700 text-gray-100 border-none"
         >
           Add Width
         </Button>
@@ -81,13 +81,13 @@ export default function SizeInput({ value, onChange }) {
           value={value.depth}
           onChange={(e) => handleInputChange("depth", e.target.value)}
           placeholder="Depth"
-          className="bg-gray-700 text-gray-100 border-none"
+          className="bg-gray-700 text-gray-100 border-none  "
         />
       ) : (
         <Button
           variant="outline"
           onClick={() => setShowDepth(true)}
-          className="w-full bg-gray-700 text-gray-100 border-none"
+          className="w-24 bg-gray-700 text-gray-100 border-none"
         >
           Add Depth
         </Button>
