@@ -70,7 +70,7 @@ export default function SizeInput({ value, onChange }) {
         <Button
           variant="outline"
           onClick={() => setShowWidth(true)}
-          className="w-24 bg-gray-700 text-gray-100 border-none"
+          className="w-24 bg-gray-700 text-gray-100 border-none mr-2"
         >
           Add Width
         </Button>
