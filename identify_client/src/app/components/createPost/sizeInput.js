@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,13 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const unitConversions = {
-  cm: 1,
-  m: 100,
-  in: 2.54,
-  ft: 30.48,
-};
 
 export default function SizeInput({ value, onChange }) {
   const [showWidth, setShowWidth] = useState(false);
@@ -26,14 +19,7 @@ export default function SizeInput({ value, onChange }) {
   };
 
   const handleUnitChange = (newUnit) => {
-    const convertedSize = Object.keys(value).reduce((acc, key) => {
-      if (key !== "unit") {
-        const cmValue = parseFloat(value[key]) * unitConversions[value.unit];
-        acc[key] = (cmValue / unitConversions[newUnit]).toFixed(2);
-      }
-      return acc;
-    }, {});
-    onChange({ ...convertedSize, unit: newUnit });
+    onChange({ ...value, unit: newUnit });
   };
 
   return (
@@ -41,12 +27,12 @@ export default function SizeInput({ value, onChange }) {
       <div className="flex items-center space-x-2">
         <Input
           type="number"
-          value={value.length}
+          value={value.length || ""}
           onChange={(e) => handleInputChange("length", e.target.value)}
           placeholder="Length"
           className="bg-gray-700 text-gray-100 border-none"
         />
-        <Select value={value.unit} onValueChange={handleUnitChange}>
+        <Select value={value.unit || "cm"} onValueChange={handleUnitChange}>
           <SelectTrigger className="w-24 border-none">
             <SelectValue placeholder="Unit" />
           </SelectTrigger>
@@ -61,7 +47,7 @@ export default function SizeInput({ value, onChange }) {
       {showWidth ? (
         <Input
           type="number"
-          value={value.width}
+          value={value.width || ""}
           onChange={(e) => handleInputChange("width", e.target.value)}
           placeholder="Width"
           className="bg-gray-700 text-gray-100 border-none"
@@ -78,10 +64,10 @@ export default function SizeInput({ value, onChange }) {
       {showDepth ? (
         <Input
           type="number"
-          value={value.depth}
+          value={value.depth || ""}
           onChange={(e) => handleInputChange("depth", e.target.value)}
           placeholder="Depth"
-          className="bg-gray-700 text-gray-100 border-none  "
+          className="bg-gray-700 text-gray-100 border-none"
         />
       ) : (
         <Button

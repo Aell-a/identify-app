@@ -55,26 +55,30 @@ export default function WikidataSearch({ selectedLabels, onChange }) {
           origin: "*",
         },
       });
-      const relatedLabels = [];
+      let relatedLabels = [];
       const entity = detailedData.data.entities[id];
-
       if (entity.claims.P31) {
-        relatedLabels.push(
-          ...relatedLabels,
-          entity.claims.P31.map((claim) => claim.mainsnak.datavalue.value.id)
-        );
+        relatedLabels = [
+          ...entity.claims.P31.map(
+            (claim) => claim.mainsnak.datavalue.value.id
+          ),
+        ];
       }
       if (entity.claims.P279) {
-        relatedLabels.push(
+        relatedLabels = [
           ...relatedLabels,
-          entity.claims.P279.map((claim) => claim.mainsnak.datavalue.value.id)
-        );
+          ...entity.claims.P279.map(
+            (claim) => claim.mainsnak.datavalue.value.id
+          ),
+        ];
       }
       if (entity.claims.P361) {
-        relatedLabels.push(
+        relatedLabels = [
           ...relatedLabels,
-          entity.claims.P361.map((claim) => claim.mainsnak.datavalue.value.id)
-        );
+          ...entity.claims.P361.map(
+            (claim) => claim.mainsnak.datavalue.value.id
+          ),
+        ];
       }
 
       return relatedLabels;
@@ -90,6 +94,7 @@ export default function WikidataSearch({ selectedLabels, onChange }) {
       ...item,
       relatedLabels,
     };
+    console.log(selectedItem);
     const updatedLabels = [...selectedLabels, selectedItem];
     onChange(updatedLabels);
     setResults([]);

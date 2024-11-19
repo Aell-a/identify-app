@@ -8,7 +8,7 @@ import PostPreview from "./components/postPreview";
 import { PlusCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import PostPopup from "./components/createPost/postPopup";
-import { getMainPagePosts } from "@/lib/middleware";
+import { createPost, getMainPagePosts } from "@/lib/middleware";
 import { debounce } from "lodash";
 import LoadingIndicator from "./components/loadingIndicatior";
 import { useRouter } from "next/navigation";
@@ -20,7 +20,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const router = useRouter();
 
   const loadInitialPosts = useCallback(async () => {
@@ -81,9 +81,18 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [page, loading]);
 
-  const handlePostSubmit = (formData) => {
-    console.log(formData);
+  const handlePostSubmit = async (formData) => {
     setIsPostPopupOpen(false);
+    try {
+      const response = await createPost(formData, token);
+      if (response.success && response.data.id) {
+        router.push(`/post/${response.data.id}`);
+      } else {
+        console.error("Failed to create post:", response.error);
+      }
+    } catch (error) {
+      console.error("Error creating post:", error);
+    }
   };
 
   return (

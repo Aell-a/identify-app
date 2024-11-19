@@ -23,12 +23,19 @@ import {
 } from "@/components/ui/tooltip";
 import { useAuth } from "@/lib/auth";
 
+const unitConversions = {
+  cm: 1,
+  m: 100,
+  in: 2.54,
+  ft: 30.48,
+};
+
 export default function PostPopup({ isOpen, onClose, onSubmit }) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     mediaFiles: [],
-    weightRange: 0,
+    weightRange: "",
     colors: [],
     shapes: [],
     materials: [],
@@ -64,36 +71,29 @@ export default function PostPopup({ isOpen, onClose, onSubmit }) {
     setFormData((prev) => ({ ...prev, mediaFiles: files }));
   };
 
-  const formatDataForEndpoint = () => {
-    const weightRanges = [
-      "<50g",
-      "50-100g",
-      "100-250g",
-      "250-500g",
-      "500-750g",
-      "750g-1kg",
-      "1-2kg",
-      "2-5kg",
-      ">5kg",
-    ];
+  const convertToCm = (value, unit) => {
+    return parseFloat(value) * unitConversions[unit];
+  };
 
+  const formatDataForEndpoint = () => {
+    const { length, width, depth, unit } = formData.size;
     return {
       userId: id,
       title: formData.title,
       description: formData.description,
-      weight: weightRanges[formData.weightRange],
+      weight: formData.weightRange,
       colors: formData.colors,
       shapes: formData.shapes,
       materials: formData.materials,
-      sizeX: parseFloat(formData.size.length),
-      sizeY: parseFloat(formData.size.width),
-      sizeZ: parseFloat(formData.size.depth),
+      sizeX: convertToCm(length, unit),
+      sizeY: width ? convertToCm(width, unit) : undefined,
+      sizeZ: depth ? convertToCm(depth, unit) : undefined,
       mediaRequests: formData.mediaFiles.map((file) => ({ file })),
       labelRequests: formData.labels.map((label) => ({
-        wikidataId: label.id,
+        wikidataId: label.wikidataId,
         description: label.description,
-        title: label.label,
-        relatedLabels: label.aliases,
+        title: label.title,
+        relatedLabels: label.relatedLabels,
       })),
     };
   };

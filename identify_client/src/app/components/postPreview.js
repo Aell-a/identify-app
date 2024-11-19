@@ -11,7 +11,7 @@ export default function PostPreview({ post }) {
     <div className="bg-gray-800 rounded-lg shadow-md overflow-hidden transition-transform duration-200 hover:scale-105 max-w-2xl mx-auto mb-8">
       <div className="relative h-64 w-full">
         <Image
-          src={post.media[0]?.url}
+          src={post.imageUrl}
           alt={post.title}
           layout="fill"
           objectFit="cover"

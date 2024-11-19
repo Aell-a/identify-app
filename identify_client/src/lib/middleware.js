@@ -119,6 +119,25 @@ export const getPost = async (postId) => {
   return await handleApiResponse(() => api.get(`/posts/${postId}`));
 };
 
-export const createPost = async (postData) => {
-  return await handleApiResponse(() => api.post(`/posts/create`, postData));
+export const createPost = async (formData, token) => {
+  return await handleApiResponse(async () => {
+    const form = new FormData();
+
+    formData.mediaRequests.forEach((mediaRequest) => {
+      form.append("files", mediaRequest.file);
+    });
+
+    const postRequest = {
+      ...formData,
+      mediaRequests: [],
+    };
+
+    form.append("postRequest", JSON.stringify(postRequest));
+
+    return await api.post("/posts/create", form, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  });
 };
