@@ -19,7 +19,7 @@ export default function Gallery({ media }) {
     <div className="relative">
       <div className="relative h-96 w-full">
         <Image
-          src={media[currentIndex].url}
+          src={media[currentIndex]}
           alt={`Image ${currentIndex + 1}`}
           layout="fill"
           objectFit="contain"

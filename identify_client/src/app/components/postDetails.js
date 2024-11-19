@@ -1,8 +1,45 @@
 import Image from "next/image";
 import { ThumbsUp, ThumbsDown, MessageSquare } from "lucide-react";
 import Gallery from "./gallery";
+import LabelHolder from "./label";
+import { useCallback } from "react";
 
 export default function PostDetails({ post }) {
+  const timeSinceLastActivity = useCallback((dateArray) => {
+    const date = new Date(
+      dateArray[0],
+      dateArray[1] - 1,
+      dateArray[2],
+      dateArray[3],
+      dateArray[4],
+      dateArray[5]
+    );
+    const seconds = Math.floor((new Date() - date) / 1000);
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " years";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " months";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " hours";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " minutes";
+    return Math.floor(seconds) + " seconds";
+  }, []);
+
+  const formatDate = useCallback((dateArray) => {
+    const date = new Date(
+      dateArray[0],
+      dateArray[1] - 1,
+      dateArray[2],
+      dateArray[3],
+      dateArray[4],
+      dateArray[5]
+    );
+    return date.toLocaleDateString();
+  }, []);
+
   return (
     <div className="bg-gray-800 rounded-lg shadow-md p-6">
       <div className="flex items-center mb-4">
@@ -21,7 +58,7 @@ export default function PostDetails({ post }) {
         </div>
       </div>
       <h1 className="text-3xl font-bold mb-4 text-gray-100">{post.title}</h1>
-      <Gallery media={post.media} />
+      <Gallery media={post.imageUrls} />
       <div className="mt-6">
         <p className="text-gray-300 mb-4">{post.description}</p>
         <div className="flex flex-wrap gap-2 mb-4">
@@ -50,9 +87,9 @@ export default function PostDetails({ post }) {
             </div>
           </div>
           <div>
-            <p>Created: {new Date(post.createdAt).toLocaleString()}</p>
-            {post.updatedAt !== post.createdAt && (
-              <p>Updated: {new Date(post.updatedAt).toLocaleString()}</p>
+            <p>Created: {timeSinceLastActivity(post.createdAt)} ago</p>
+            {formatDate(post.updatedAt) !== formatDate(post.createdAt) && (
+              <p>Updated: {timeSinceLastActivity(post.updatedAt)} ago</p>
             )}
           </div>
         </div>
@@ -64,40 +101,38 @@ export default function PostDetails({ post }) {
             <div>
               <h3 className="font-semibold text-gray-300">Size</h3>
               <p className="text-gray-400">
-                X: {post.object.size.x}m, Y: {post.object.size.y}m, Z:{" "}
-                {post.object.size.z}m
+                Length: {post.sizeX} cm{" "}
+                {post.sizeY != 0 && `Width: ${post.sizeY} cm`}{" "}
+                {post.sizeZ != 0 && `Depth: ${post.sizeZ} cm`}
               </p>
             </div>
             <div>
               <h3 className="font-semibold text-gray-300">Weight</h3>
-              <p className="text-gray-400">{post.object.weight} kg</p>
+              <p className="text-gray-400">{post.weight}</p>
             </div>
             <div>
               <h3 className="font-semibold text-gray-300">Colors</h3>
-              <p className="text-gray-400">{post.object.colors.join(", ")}</p>
+              <p className="text-gray-400">{post.colors.join(", ")}</p>
             </div>
             <div>
               <h3 className="font-semibold text-gray-300">Shapes</h3>
-              <p className="text-gray-400">{post.object.shapes.join(", ")}</p>
+              <p className="text-gray-400">{post.shapes.join(", ")}</p>
             </div>
             <div>
               <h3 className="font-semibold text-gray-300">Materials</h3>
-              <p className="text-gray-400">
-                {post.object.materials.join(", ")}
-              </p>
+              <p className="text-gray-400">{post.materials.join(", ")}</p>
             </div>
           </div>
-          {post.object.labels && post.object.labels.length > 0 && (
+          {post.wikidataLabels && post.wikidataLabels.length > 0 && (
             <div className="mt-4">
               <h3 className="font-semibold text-gray-300">Labels</h3>
               <div className="flex flex-wrap gap-2 mt-2">
-                {post.object.labels.map((label, index) => (
-                  <span
-                    key={index}
-                    className="bg-blue-600 text-white px-2 py-1 rounded-full text-sm"
-                  >
-                    {label}
-                  </span>
+                {post.wikidataLabels.map((label, index) => (
+                  <LabelHolder
+                    index={index}
+                    title={label.title}
+                    description={label.description}
+                  />
                 ))}
               </div>
             </div>
