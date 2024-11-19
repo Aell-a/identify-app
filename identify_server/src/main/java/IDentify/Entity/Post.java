@@ -17,12 +17,8 @@ public class Post {
     private Long id;
 
     private Long userId;
-
-    @Embedded
-    private Mystery mystery;
     private String title;
     private String description;
-
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt;
 
@@ -33,6 +29,9 @@ public class Post {
     private int upvotes = 0;
     private int downvote = 0;
     private int totalPoints = 0;
+
+    @Embedded
+    private Mystery mystery;
 
     @ManyToMany
     @JoinTable(

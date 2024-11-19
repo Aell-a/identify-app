@@ -8,6 +8,7 @@ import IDentify.Entity.Post;
 import IDentify.Mapper.PostMapper;
 import IDentify.Service.PostService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -64,24 +66,47 @@ public class PostController {
     }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Long> createPost(@RequestPart("postRequest") String postRequestJSON, @RequestPart("files") List<MultipartFile> files) {
+    public ResponseEntity<?> createPost(@RequestPart("postRequest") String postRequestJSON,
+                                        @RequestPart("files") List<MultipartFile> files) {
         try {
+            if (files == null || files.isEmpty()) {
+                return ResponseEntity
+                        .badRequest()
+                        .body("At least one media file is required");
+            }
+
             ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
             PostRequest postRequest = mapper.readValue(postRequestJSON, PostRequest.class);
 
-            List<MediaRequest> mediaRequests = new ArrayList<>();
-            for (MultipartFile file : files) {
-                MediaRequest mediaRequest = new MediaRequest();
-                mediaRequest.setFile(file);
-                mediaRequests.add(mediaRequest);
+            if (postRequest.getUserId() == null) {
+                return ResponseEntity
+                        .badRequest()
+                        .body("User ID is required");
             }
+
+            List<MediaRequest> mediaRequests = files.stream()
+                    .map(file -> {
+                        MediaRequest mediaRequest = new MediaRequest();
+                        mediaRequest.setFile(file);
+                        return mediaRequest;
+                    })
+                    .collect(Collectors.toList());
             postRequest.setMediaRequests(mediaRequests);
 
             Post newPost = postService.createPost(postRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).body(newPost.getId());
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(newPost.getId());
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to create post: " + e.getMessage());
         }
-    }
-}
+    }}

@@ -1,18 +1,19 @@
 package IDentify.Entity;
 
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import java.util.List;
 
-@Embeddable
+@Entity
+@Table(name = "wikidata_labels")
 @Data
 @NoArgsConstructor
 public class WikidataLabel {
 
-    @NonNull
+    @Id
     private String wikidataId;
 
     @NonNull
@@ -21,5 +22,11 @@ public class WikidataLabel {
     @NonNull
     private String description;
 
+    @ElementCollection
+    @CollectionTable(
+            name = "wikidata_related_labels",
+            joinColumns = @JoinColumn(name = "wikidata_id")
+    )
+    @Column(name = "related_label")
     private List<String> relatedLabels;
 }

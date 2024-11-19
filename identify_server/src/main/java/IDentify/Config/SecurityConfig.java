@@ -50,7 +50,7 @@ public class SecurityConfig {
                                 "/api/users/checkByEmail",
                                 "/api/users/checkByNickname",
                                 "/api/media/**",
-                                "/api/posts/main"
+                                "/api/posts/main/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

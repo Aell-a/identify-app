@@ -6,6 +6,8 @@ import IDentify.DTO.Post.PostRequest;
 import IDentify.Entity.*;
 import IDentify.Mapper.PostMapper;
 import IDentify.Repository.PostRepository;
+import IDentify.Repository.WikidataLabelRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,7 +21,8 @@ import java.util.stream.Collectors;
 public class PostService {
     @Autowired
     private PostRepository postRepository;
-
+    @Autowired
+    private WikidataLabelRepository wikidataLabelRepository;
     @Autowired
     private PostMapper postMapper;
     @Autowired
@@ -69,6 +72,7 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public Post createPost(PostRequest postRequest) {
         Post post = new Post();
         post.setUserId(postRequest.getUserId());
@@ -83,33 +87,44 @@ public class PostService {
         mystery.setSizeX(postRequest.getSizeX());
         mystery.setSizeY(postRequest.getSizeY());
         mystery.setSizeZ(postRequest.getSizeZ());
-        if (postRequest.getMediaRequests() != null && !postRequest.getMediaRequests().isEmpty()) {
-            List<Media> mediaList = postRequest.getMediaRequests().stream()
-                    .map(mediaRequest -> {
-                        try {
-                            return mediaService.uploadMedia(mediaRequest.getFile(), postRequest.getUserId());
-                        } catch (IOException e) {
-                            throw new RuntimeException("Failed to upload media", e);
-                        }
-                    })
-                    .toList();
-            mystery.setMedias(mediaList);
+        if (postRequest.getMediaRequests() == null || postRequest.getMediaRequests().isEmpty()) {
+            throw new IllegalArgumentException("At least one media file is required");
         }
+
+        List<Media> mediaList = postRequest.getMediaRequests().stream()
+                .map(mediaRequest -> {
+                    try {
+                        return mediaService.uploadMedia(mediaRequest.getFile(), postRequest.getUserId());
+                    } catch (IOException e) {
+                        throw new RuntimeException("Failed to upload media", e);
+                    }
+                })
+                .toList();
+        mystery.setMedias(mediaList);
         if (postRequest.getLabelRequests() != null && !postRequest.getLabelRequests().isEmpty()) {
             List<WikidataLabel> labelList = postRequest.getLabelRequests().stream()
                     .map(labelRequest -> {
-                        WikidataLabel label = new WikidataLabel();
-                        label.setWikidataId(labelRequest.getWikidataId());
-                        label.setDescription(labelRequest.getDescription());
-                        label.setTitle(labelRequest.getTitle());
-                        label.setRelatedLabels(labelRequest.getRelatedLabels());
-                        return label;
+                        return wikidataLabelRepository
+                                .findById(labelRequest.getWikidataId())
+                                .orElseGet(() -> {
+                                    WikidataLabel newLabel = new WikidataLabel();
+                                    newLabel.setWikidataId(labelRequest.getWikidataId());
+                                    newLabel.setTitle(labelRequest.getTitle());
+                                    newLabel.setDescription(labelRequest.getDescription());
+                                    newLabel.setRelatedLabels(labelRequest.getRelatedLabels());
+                                    return wikidataLabelRepository.save(newLabel);
+                                });
                     })
                     .toList();
             mystery.setWikidataLabels(labelList);
         }
         post.setMystery(mystery);
         post.setStatus(PostStatus.ACTIVE);
-        return postRepository.save(post);
+
+        try {
+            return postRepository.save(post);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create post", e);
+        }
     }
 }

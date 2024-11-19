@@ -1,7 +1,6 @@
 package IDentify.Entity;
 
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
@@ -10,9 +9,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class Mystery {
-    // Common fields in every user posted object
     private String weight;
-    // Holding object dimensions as x,y,z
     private double sizeX;
     private double sizeY;
     private double sizeZ;
@@ -28,7 +25,11 @@ public class Mystery {
     @ElementCollection
     private List<Media> medias;
 
-    // List of user added wikidata labels
-    @ElementCollection
+    @ManyToMany
+    @JoinTable(
+            name = "post_wikidata_labels",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "wikidata_id")
+    )
     private List<WikidataLabel> wikidataLabels;
 }
