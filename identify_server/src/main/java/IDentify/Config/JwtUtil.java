@@ -16,7 +16,7 @@ public class JwtUtil {
     private String SECRET_KEY;
 
     // Token expiration time in milliseconds (1 hour here)
-    private final long JWT_EXPIRATION_TIME = 1000 * 60 * 60;
+    private final long JWT_EXPIRATION_TIME = 1000 * 60 * 60 * 5;
 
     public String generateToken(Long userId) {
         return JWT.create()

@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 public class Mystery {
     // Common fields in every user posted object
-    private double weight;
+    private String weight;
     // Holding object dimensions as x,y,z
     private double sizeX;
     private double sizeY;

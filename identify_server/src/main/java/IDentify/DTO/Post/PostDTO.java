@@ -29,7 +29,7 @@ public class PostDTO {
     private Set<Tag> tags;
     private MiniProfile user;
     private List<String> imageUrls;
-    private double weight;
+    private String weight;
     private double sizeX;
     private double sizeY;
     private double sizeZ;

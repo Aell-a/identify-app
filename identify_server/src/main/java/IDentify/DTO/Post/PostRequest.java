@@ -14,7 +14,7 @@ public class PostRequest {
     private List<String> colors;
     private List<String> shapes;
     private List<String> materials;
-    private double weight;
+    private String weight;
     private double sizeX;
     private double sizeY;
     private double sizeZ;

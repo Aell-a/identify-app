@@ -108,7 +108,7 @@ public class PostService {
                     .toList();
             mystery.setWikidataLabels(labelList);
         }
-
+        post.setMystery(mystery);
         post.setStatus(PostStatus.ACTIVE);
         return postRepository.save(post);
     }
