@@ -18,7 +18,7 @@ public class PostMapper {
     private UserService userService;
 
     public PostDTO toPostDTO(Post post) {
-            MiniProfile miniProfile = userService.getMiniProfile(post.getId());
+            MiniProfile miniProfile = userService.getMiniProfile(post.getUserId());
             return PostDTO.builder()
                     .id(post.getId())
                     .title(post.getTitle())
