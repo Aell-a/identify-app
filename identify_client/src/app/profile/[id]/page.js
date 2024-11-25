@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/auth";
 import Image from "next/image";
 import { editProfile, getProfile } from "@/lib/middleware";
 import { Button } from "@/components/ui/button";
-import ImageCropper from "@/app/components/imageCropper";
+import ImageCropper from "@/app/components/Profile/ImageCropper";
 import { readAndCompressImage } from "browser-image-resizer";
 
 export default function ProfilePage({ params }) {

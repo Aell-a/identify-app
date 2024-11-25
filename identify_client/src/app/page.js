@@ -3,14 +3,14 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import AuthPopup from "./components/authPopup";
-import PostPreview from "./components/postPreview";
+import AuthPopup from "./components/Appwide/AuthPopup";
+import PostPreview from "./components/FrontPage/PostPreview";
 import { PlusCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import PostPopup from "./components/createPost/postPopup";
+import PostPopup from "./components/CreatePost/PostPopup";
 import { createPost, getMainPagePosts } from "@/lib/middleware";
 import { debounce } from "lodash";
-import LoadingIndicator from "./components/loadingIndicatior";
+import LoadingIndicator from "./components/Appwide/LoadingIndicatior";
 import { useRouter } from "next/navigation";
 
 export default function Home() {

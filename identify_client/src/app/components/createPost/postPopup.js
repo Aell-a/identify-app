@@ -10,11 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import StepSlider from "@/app/components/createPost/stepSlider";
-import MultiSelect from "@/app/components/createPost/multiSelect";
-import SizeInput from "@/app/components/createPost/sizeInput";
-import WikidataSearch from "@/app/components/createPost/wikidataSearch";
-import MediaUpload from "./mediaUpload";
+import StepSlider from "./StepSlider";
+import MultiSelect from "@/app/components/CreatePost/MultiSelect";
+import SizeInput from "@/app/components/CreatePost/SizeInput";
+import WikidataSearch from "./WikidataSearch";
+import MediaUpload from "./MediaUpload";
 import {
   Tooltip,
   TooltipContent,
