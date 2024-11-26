@@ -129,9 +129,11 @@ export default function PostDetails({ post }) {
               <div className="flex flex-wrap gap-2 mt-2">
                 {post.wikidataLabels.map((label, index) => (
                   <LabelHolder
+                    key={index}
                     index={index}
                     title={label.title}
                     description={label.description}
+                    wikidataId={label.wikidataId}
                   />
                 ))}
               </div>
