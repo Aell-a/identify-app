@@ -79,7 +79,7 @@ export default function Home() {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [page, loading]);
+  }, [page, loading, handleLoadMore]);
 
   const handlePostSubmit = async (formData) => {
     setIsPostPopupOpen(false);

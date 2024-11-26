@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import ReactCrop from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 export default function ImageCropper({ image, onCropComplete }) {
   const [crop, setCrop] = useState({ aspect: 1, width: 200 });
@@ -59,7 +60,12 @@ export default function ImageCropper({ image, onCropComplete }) {
         onComplete={(c) => setCompletedCrop(c)}
         aspect={1}
       >
-        <img src={image} id="cropImage" onLoad={onImageLoad} />
+        <Image
+          src={image}
+          id="cropImage"
+          alt="uploaded image"
+          onLoad={onImageLoad}
+        />
       </ReactCrop>
       <div className="mt-4 space-x-4">
         <Button

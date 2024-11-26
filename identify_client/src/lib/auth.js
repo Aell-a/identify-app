@@ -67,7 +67,7 @@ export function AuthProvider({ children }) {
     if (token && !state.user) {
       verifyToken(token);
     }
-  }, []);
+  }, [state.user]);
 
   useEffect(() => {
     if (state.token) {

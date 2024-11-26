@@ -36,7 +36,6 @@ export default function ProfilePage({ params }) {
   }, [params.id, fetchProfile]);
 
   const timeSinceLastActivity = useCallback((dateArray) => {
-    // Convert array format to Date object
     const date = new Date(
       dateArray[0],
       dateArray[1] - 1,
@@ -86,13 +85,11 @@ export default function ProfilePage({ params }) {
         setPreviewImage(null);
       } else {
         console.error("Failed to save profile:", response.error);
-        // Optionally show error to user
       }
     } catch (error) {
       console.error("Failed to save profile:", error);
-      // Optionally show error to user
     }
-  }, [profile, editedBio, processedImage]);
+  }, [profile, editedBio, processedImage, token]);
 
   const handleFileUpload = useCallback((e) => {
     const file = e.target.files[0];
@@ -105,7 +102,7 @@ export default function ProfilePage({ params }) {
       reader.onloadend = () => {
         setSelectedImage({
           dataUrl: reader.result,
-          file: file, // Store the original file
+          file: file,
         });
       };
       reader.readAsDataURL(file);
