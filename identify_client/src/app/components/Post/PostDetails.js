@@ -1,8 +1,11 @@
 import Image from "next/image";
-import { ThumbsUp, ThumbsDown, MessageSquare } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import Gallery from "./Gallery";
 import LabelHolder from "./Label";
 import { useCallback } from "react";
+import MiniUserProfile from "../Appwide/MiniUserProfile";
 
 export default function PostDetails({ post }) {
   const timeSinceLastActivity = useCallback((dateArray) => {
@@ -41,106 +44,152 @@ export default function PostDetails({ post }) {
   }, []);
 
   return (
-    <div className="bg-gray-800 rounded-lg shadow-md p-6">
-      <div className="flex items-center mb-4">
-        <Image
-          src={post.user.profilePicture}
-          alt={post.user.nickname}
-          width={50}
-          height={50}
-          className="rounded-full mr-4"
-        />
-        <div>
-          <p className="font-semibold text-gray-100">{post.user.nickname}</p>
-          <p className="text-sm text-gray-400">
-            Points: {post.user.totalPoints}
-          </p>
+    <div className="grid lg:grid-cols-[1fr_400px] gap-6">
+      <div className="space-y-6">
+        <div className="bg-gray-800 rounded-lg p-6">
+          <MiniUserProfile user={post.user}>
+            <div className="flex items-center mb-4">
+              {post.user.profilePicture ? (
+                <Image
+                  src={post.user.profilePicture}
+                  alt={post.user.nickname}
+                  width={50}
+                  height={50}
+                  className="rounded-full mr-4"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full mr-4 bg-black" />
+              )}
+              <div>
+                <p className="font-semibold text-gray-100">
+                  {post.user.nickname}
+                </p>
+              </div>
+            </div>
+          </MiniUserProfile>
+          <h1 className="text-3xl font-bold mb-4 text-gray-100">
+            {post.title}
+          </h1>
+          <Gallery media={post.imageUrls} />
+          <div className="mt-6">
+            <p className="text-gray-300 mb-4">{post.description}</p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {post.tags.map((tag, index) => (
+                <Badge key={index} variant="secondary">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+            <div className="flex items-center text-sm text-gray-400">
+              <div>
+                <p>Created: {timeSinceLastActivity(post.createdAt)} ago</p>
+                {formatDate(post.updatedAt) !== formatDate(post.createdAt) && (
+                  <p>Updated: {timeSinceLastActivity(post.updatedAt)} ago</p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <h1 className="text-3xl font-bold mb-4 text-gray-100">{post.title}</h1>
-      <Gallery media={post.imageUrls} />
-      <div className="mt-6">
-        <p className="text-gray-300 mb-4">{post.description}</p>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {post.tags.map((tag, index) => (
-            <span
-              key={index}
-              className="bg-blue-600 text-white px-2 py-1 rounded-full text-sm"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-        <div className="flex justify-between items-center text-sm text-gray-400 mb-4">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-1">
-              <ThumbsUp className="w-4 h-4" />
-              <span>{post.upvotes}</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <ThumbsDown className="w-4 h-4" />
-              <span>{post.downvotes}</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <MessageSquare className="w-4 h-4" />
-              <span>{post.commentCount}</span>
-            </div>
-          </div>
-          <div>
-            <p>Created: {timeSinceLastActivity(post.createdAt)} ago</p>
-            {formatDate(post.updatedAt) !== formatDate(post.createdAt) && (
-              <p>Updated: {timeSinceLastActivity(post.updatedAt)} ago</p>
-            )}
-          </div>
-        </div>
-        <div className="border-t border-gray-700 pt-4">
-          <h2 className="text-xl font-bold mb-2 text-gray-100">
+      <Card className="bg-gray-800 border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-xl text-gray-100">
             Mystery Object Details
-          </h2>
-          <div className="grid grid-cols-2 gap-4">
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
             <div>
-              <h3 className="font-semibold text-gray-300">Size</h3>
-              <p className="text-gray-400">
-                Length: {post.sizeX} cm{" "}
-                {post.sizeY != 0 && `Width: ${post.sizeY} cm`}{" "}
-                {post.sizeZ != 0 && `Depth: ${post.sizeZ} cm`}
-              </p>
+              <h3 className="text-sm font-medium text-gray-300 mb-2">
+                Dimensions
+              </h3>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-gray-700/50 p-3 rounded-lg">
+                  <div className="text-xs text-gray-400">Length</div>
+                  <div className="text-gray-200">{post.sizeX} cm</div>
+                </div>
+                {post.sizeY != 0 && (
+                  <div className="bg-gray-700/50 p-3 rounded-lg">
+                    <div className="text-xs text-gray-400">Width</div>
+                    <div className="text-gray-200">{post.sizeY} cm</div>
+                  </div>
+                )}
+                {post.sizeZ != 0 && (
+                  <div className="bg-gray-700/50 p-3 rounded-lg">
+                    <div className="text-xs text-gray-400">Depth</div>
+                    <div className="text-gray-200">{post.sizeZ} cm</div>
+                  </div>
+                )}
+              </div>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-300">Weight</h3>
-              <p className="text-gray-400">{post.weight}</p>
+              <h3 className="text-sm font-medium text-gray-300 mb-2">Weight</h3>
+              <div className="bg-gray-700/50 p-3 rounded-lg">
+                <div className="text-gray-200">{post.weight}</div>
+              </div>
             </div>
+            <Separator className="bg-gray-700" />
             <div>
-              <h3 className="font-semibold text-gray-300">Colors</h3>
-              <p className="text-gray-400">{post.colors.join(", ")}</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-300">Shapes</h3>
-              <p className="text-gray-400">{post.shapes.join(", ")}</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-300">Materials</h3>
-              <p className="text-gray-400">{post.materials.join(", ")}</p>
+              <h3 className="text-sm font-medium text-gray-300 mb-2">
+                Physical Properties
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <div className="text-xs text-gray-400 mb-1">Colors</div>
+                  <div className="flex flex-wrap gap-2">
+                    {post.colors.map((color, index) => (
+                      <Badge key={index} variant="outline">
+                        {color}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-400 mb-1">Shapes</div>
+                  <div className="flex flex-wrap gap-2">
+                    {post.shapes.map((shape, index) => (
+                      <Badge key={index} variant="outline">
+                        {shape}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-400 mb-1">Materials</div>
+                  <div className="flex flex-wrap gap-2">
+                    {post.materials.map((material, index) => (
+                      <Badge key={index} variant="outline">
+                        {material}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           {post.wikidataLabels && post.wikidataLabels.length > 0 && (
-            <div className="mt-4">
-              <h3 className="font-semibold text-gray-300">Labels</h3>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {post.wikidataLabels.map((label, index) => (
-                  <LabelHolder
-                    key={index}
-                    index={index}
-                    title={label.title}
-                    description={label.description}
-                    wikidataId={label.wikidataId}
-                  />
-                ))}
+            <>
+              <Separator className="bg-gray-700" />
+              <div>
+                <h3 className="text-sm font-medium text-gray-300 mb-2">
+                  Labels
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {post.wikidataLabels.map((label, index) => (
+                    <LabelHolder
+                      key={index}
+                      index={index}
+                      title={label.title}
+                      description={label.description}
+                      wikidataId={label.wikidataId}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            </>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

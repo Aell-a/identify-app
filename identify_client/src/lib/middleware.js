@@ -141,3 +141,5 @@ export const createPost = async (formData, token) => {
     });
   });
 };
+
+export const getComments = async (postId) => {};

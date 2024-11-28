@@ -19,13 +19,17 @@ export default function PostPreview({ post }) {
       </div>
       <div className="p-4">
         <div className="flex items-center mb-2">
-          <Image
-            src={post.user.profilePicture}
-            alt={post.user.nickname}
-            width={40}
-            height={40}
-            className="rounded-full mr-2"
-          />
+          {post.user.profilePicture ? (
+            <Image
+              src={post.user.profilePicture}
+              alt={post.user.nickname}
+              width={40}
+              height={40}
+              className="rounded-full mr-2"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full mr-2 bg-black"></div>
+          )}
           <div>
             <p className="font-semibold text-gray-100">{post.user.nickname}</p>
             <p className="text-sm text-gray-400">
