@@ -1,10 +1,14 @@
 package com.example.identify.service;
 
+import com.example.identify.dto.post.CommentDTO;
 import com.example.identify.dto.post.MiniPostDTO;
 import com.example.identify.dto.post.PostDTO;
 import com.example.identify.dto.post.PostRequest;
+import com.example.identify.dto.user.MiniProfile;
+import com.example.identify.mapper.CommentMapper;
 import com.example.identify.model.*;
 import com.example.identify.mapper.PostMapper;
+import com.example.identify.repository.CommentRepository;
 import com.example.identify.repository.PostRepository;
 import com.example.identify.repository.WikidataLabelRepository;
 import jakarta.transaction.Transactional;
@@ -27,48 +31,49 @@ public class PostService {
     private PostMapper postMapper;
     @Autowired
     private MediaService mediaService;
-
-    public List<PostDTO> getPosts(int page, int size) {
-        Page<Post> posts = postRepository.findAll(PageRequest.of(page, size));
-        return posts.stream()
-                .map(postMapper::toPostDTO)
-                .collect(Collectors.toList());
-    }
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private CommentRepository commentRepository;
+    @Autowired
+    private CommentMapper commentMapper;
 
     public PostDTO getPostById(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
-        return postMapper.toPostDTO(post);
-    }
-
-    public List<PostDTO> getAllPostsByUserId(Long userId) {
-        return postRepository.findAllByUserId(userId).stream()
-                .map(postMapper::toPostDTO)
-                .collect(Collectors.toList());
-    }
-
-    public List<PostDTO> getAllByTagId(Long tagId) {
-        return postRepository.findAllByTagId(tagId).stream()
-                .map(postMapper::toPostDTO)
-                .collect(Collectors.toList());
+        MiniProfile miniProfile = userService.getMiniProfile(post.getUserId());
+        List<CommentDTO> comments = post.getComments()
+                .stream()
+                .map(commentMapper::toCommentDTO)
+                .toList();
+        return postMapper.toPostDTO(post, miniProfile, comments);
     }
 
     public List<MiniPostDTO> getMiniPosts(int page, int size) {
         Page<Post> posts = postRepository.findAll(PageRequest.of(page, size));
         return posts.stream()
-                .map(postMapper::toMiniPostDTO)
+                .map(post -> {
+                    MiniProfile miniProfile = userService.getMiniProfile(post.getUserId());
+                    return postMapper.toMiniPostDTO(post, miniProfile);
+                })
                 .collect(Collectors.toList());
     }
 
     public List<MiniPostDTO> getAllMiniPostsByUserId(Long userId) {
         return postRepository.findAllByUserId(userId).stream()
-                .map(postMapper::toMiniPostDTO)
+                .map(post -> {
+                    MiniProfile miniProfile = userService.getMiniProfile(post.getUserId());
+                    return postMapper.toMiniPostDTO(post, miniProfile);
+                })
                 .collect(Collectors.toList());
     }
 
     public List<MiniPostDTO> getAllMiniPostsByTagId(Long tagId) {
         return postRepository.findAllByTagId(tagId).stream()
-                .map(postMapper::toMiniPostDTO)
+                .map(post -> {
+                    MiniProfile miniProfile = userService.getMiniProfile(post.getUserId());
+                    return postMapper.toMiniPostDTO(post, miniProfile);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -103,18 +108,16 @@ public class PostService {
         mystery.setMedias(mediaList);
         if (postRequest.getLabelRequests() != null && !postRequest.getLabelRequests().isEmpty()) {
             List<WikidataLabel> labelList = postRequest.getLabelRequests().stream()
-                    .map(labelRequest -> {
-                        return wikidataLabelRepository
-                                .findById(labelRequest.getWikidataId())
-                                .orElseGet(() -> {
-                                    WikidataLabel newLabel = new WikidataLabel();
-                                    newLabel.setWikidataId(labelRequest.getWikidataId());
-                                    newLabel.setTitle(labelRequest.getTitle());
-                                    newLabel.setDescription(labelRequest.getDescription());
-                                    newLabel.setRelatedLabels(labelRequest.getRelatedLabels());
-                                    return wikidataLabelRepository.save(newLabel);
-                                });
-                    })
+                    .map(labelRequest -> wikidataLabelRepository
+                            .findById(labelRequest.getWikidataId())
+                            .orElseGet(() -> {
+                                WikidataLabel newLabel = new WikidataLabel();
+                                newLabel.setWikidataId(labelRequest.getWikidataId());
+                                newLabel.setTitle(labelRequest.getTitle());
+                                newLabel.setDescription(labelRequest.getDescription());
+                                newLabel.setRelatedLabels(labelRequest.getRelatedLabels());
+                                return wikidataLabelRepository.save(newLabel);
+                            }))
                     .toList();
             mystery.setWikidataLabels(labelList);
         }
@@ -126,5 +129,15 @@ public class PostService {
         } catch (Exception e) {
             throw new RuntimeException("Failed to create post", e);
         }
+    }
+
+    public Comment addComment(Long postId, Comment comment) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(()-> new RuntimeException("Post not found"));
+        comment.setPost(post);
+        post.getComments().add(comment);
+        post.setNumberOfComments(post.getNumberOfComments() + 1);
+        postRepository.save(post);
+        return comment;
     }
 }

@@ -1,21 +1,18 @@
 package com.example.identify.mapper;
 
+import com.example.identify.dto.post.CommentDTO;
 import com.example.identify.dto.post.MiniPostDTO;
 import com.example.identify.dto.post.PostDTO;
 import com.example.identify.dto.user.MiniProfile;
 import com.example.identify.model.Media;
 import com.example.identify.model.Post;
-import com.example.identify.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class PostMapper {
-    @Autowired
-    private UserService userService;
-
-    public PostDTO toPostDTO(Post post) {
-            MiniProfile miniProfile = userService.getMiniProfile(post.getUserId());
+    public PostDTO toPostDTO(Post post, MiniProfile user, List<CommentDTO> comments) {
             return PostDTO.builder()
                     .id(post.getId())
                     .title(post.getTitle())
@@ -27,7 +24,7 @@ public class PostMapper {
                     .downvotes(post.getDownvote())
                     .totalPoints(post.getTotalPoints())
                     .tags(post.getTags())
-                    .user(miniProfile)
+                    .user(user)
                     .imageUrls(post.getMystery().getMedias().stream().map(Media::getMediaUrl).toList())
                     .weight(post.getMystery().getWeight())
                     .sizeX(post.getMystery().getSizeX())
@@ -37,13 +34,14 @@ public class PostMapper {
                     .materials(post.getMystery().getMaterials())
                     .shapes(post.getMystery().getShapes())
                     .wikidataLabels(post.getMystery().getWikidataLabels())
+                    .comments(comments)
                     .build();
     }
 
-    public MiniPostDTO toMiniPostDTO(Post post) {
+    public MiniPostDTO toMiniPostDTO(Post post, MiniProfile user) {
         return MiniPostDTO.builder()
                 .id(post.getId())
-                .user(userService.getMiniProfile(post.getUserId()))
+                .user(user)
                 .title(post.getTitle())
                 .description(post.getDescription())
                 .totalPoints(post.getTotalPoints())
@@ -51,8 +49,4 @@ public class PostMapper {
                 .imageUrl(post.getMystery().getMedias().get(0).getMediaUrl())
                 .build();
     }
-
-//    public Post toPost(PostRequest postRequest) {
-//
-//    }
 }

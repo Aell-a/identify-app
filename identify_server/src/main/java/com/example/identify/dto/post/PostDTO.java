@@ -37,4 +37,5 @@ public class PostDTO {
     private List<String> shapes;
     private List<String> materials;
     private List<WikidataLabel> wikidataLabels;
+    private List<CommentDTO> comments;
 }

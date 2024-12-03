@@ -1,9 +1,12 @@
 package com.example.identify.controller;
 
 import com.example.identify.dto.media.MediaRequest;
+import com.example.identify.dto.post.CommentDTO;
 import com.example.identify.dto.post.MiniPostDTO;
 import com.example.identify.dto.post.PostDTO;
 import com.example.identify.dto.post.PostRequest;
+import com.example.identify.mapper.CommentMapper;
+import com.example.identify.model.Comment;
 import com.example.identify.model.Post;
 import com.example.identify.mapper.PostMapper;
 import com.example.identify.service.PostService;
@@ -26,6 +29,8 @@ public class PostController {
     private PostService postService;
     @Autowired
     private PostMapper postMapper;
+    @Autowired
+    private CommentMapper commentMapper;
 
     @GetMapping("/main")
     public ResponseEntity<List<MiniPostDTO> > getMainPagePosts(@RequestParam(defaultValue = "0") int page,
@@ -108,4 +113,11 @@ public class PostController {
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to create post: " + e.getMessage());
         }
-    }}
+    }
+
+    @PostMapping("/{postId}/comment")
+    public ResponseEntity<CommentDTO> addComment(@PathVariable Long postId, @RequestBody Comment comment) {
+        Comment newComment = postService.addComment(postId, comment);
+        return ResponseEntity.status(HttpStatus.CREATED).body(commentMapper.toCommentDTO(newComment));
+    }
+}

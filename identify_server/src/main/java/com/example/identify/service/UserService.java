@@ -3,11 +3,16 @@ package com.example.identify.service;
 import com.example.identify.dto.auth.LoginRequest;
 import com.example.identify.dto.auth.AuthResponse;
 import com.example.identify.dto.auth.RegisterRequest;
+import com.example.identify.dto.post.CommentDTO;
+import com.example.identify.dto.post.MiniPostDTO;
 import com.example.identify.dto.user.MiniProfile;
 import com.example.identify.dto.user.Profile;
+import com.example.identify.mapper.PostMapper;
 import com.example.identify.model.Media;
 import com.example.identify.model.User;
 import com.example.identify.mapper.UserMapper;
+import com.example.identify.repository.CommentRepository;
+import com.example.identify.repository.PostRepository;
 import com.example.identify.repository.UserRepository;
 import com.example.identify.config.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -33,6 +39,12 @@ public class UserService {
     private UserMapper userMapper;
     @Autowired
     private MediaService mediaService;
+    @Autowired
+    private PostRepository postRepository;
+    @Autowired
+    private PostMapper postMapper;
+    @Autowired
+    private CommentRepository commentRepository;
 
     // Checks nickname uniqueness
     public boolean isNicknameInUse(String nickname) {
@@ -92,14 +104,37 @@ public class UserService {
 
     // Gets user profile information by id
     public Profile getProfile(Long id) {
-
         Optional<User> user = userRepository.findById(id);
-        return user.map(userMapper::toProfile).orElse(null);
+        if (user.isEmpty()) {
+            return null;
+        }
+
+        User userEntity = user.get();
+
+        List<MiniPostDTO> recentPosts = postRepository.findRecentPostsByUserId(userEntity.getId())
+                .stream()
+                .limit(5)
+                .map(post -> {
+                    MiniProfile miniProfile = getMiniProfile(userEntity.getId());
+                    return postMapper.toMiniPostDTO(post, miniProfile);
+                })
+                .toList();
+
+        List<CommentDTO> recentComments = commentRepository.findRecentCommentsByUserId(userEntity.getId())
+                .stream()
+                .limit(5)
+                .map(comment -> new CommentDTO(comment.getId(), comment.getPost().getId(), comment.getContent(), comment.getType(), comment.getCreatedAt()))
+                .toList();
+
+        return userMapper.toProfile(userEntity, recentPosts, recentComments);
     }
 
     // Gets user mini profile information by id
     public MiniProfile getMiniProfile(Long id) {
         Optional<User> user = userRepository.findById(id);
+        if (user.isEmpty()) {
+            return null;
+        }
         return user.map(userMapper::toMiniProfile).orElse(null);
     }
 
@@ -110,7 +145,22 @@ public class UserService {
         if (user != null) {
             user.setBio(updatedProfile.getBio());
             userRepository.save(user);
-            return userMapper.toProfile(user);
+            List<MiniPostDTO> recentPosts = postRepository.findRecentPostsByUserId(user.getId())
+                    .stream()
+                    .limit(5)
+                    .map(post -> {
+                        MiniProfile miniProfile = getMiniProfile(user.getId());
+                        return postMapper.toMiniPostDTO(post, miniProfile);
+                    })
+                    .toList();
+
+            List<CommentDTO> recentComments = commentRepository.findRecentCommentsByUserId(user.getId())
+                    .stream()
+                    .limit(5)
+                    .map(comment -> new CommentDTO(comment.getId(), comment.getPost().getId(), comment.getContent(), comment.getType(), comment.getCreatedAt()))
+                    .toList();
+
+            return userMapper.toProfile(user, recentPosts, recentComments);
         }
         return null;
     }

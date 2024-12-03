@@ -2,6 +2,8 @@ package com.example.identify.dto.user;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -12,4 +14,5 @@ public class MiniProfile {
     private String nickname; // User's nickname
     private String profilePicture; // URL or path to the user's profile picture
     private int totalPoints; // Total points accumulated by the user
+    private LocalDateTime createdAt;
 }

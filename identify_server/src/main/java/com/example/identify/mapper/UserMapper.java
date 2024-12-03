@@ -1,9 +1,13 @@
 package com.example.identify.mapper;
 
+import com.example.identify.dto.post.CommentDTO;
+import com.example.identify.dto.post.MiniPostDTO;
 import com.example.identify.dto.user.MiniProfile;
 import com.example.identify.dto.user.Profile;
 import com.example.identify.model.User;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class UserMapper {
@@ -17,10 +21,11 @@ public class UserMapper {
                 .nickname(user.getNickname())
                 .profilePicture(user.getProfilePicture())
                 .totalPoints(user.getTotalPoint())
+                .createdAt(user.getAccountCreated())
                 .build();
     }
 
-    public Profile toProfile(User user) {
+    public Profile toProfile(User user, List<MiniPostDTO> recentPosts, List<CommentDTO> recentComments) {
         if (user == null) {
             return null;
         }
@@ -33,6 +38,8 @@ public class UserMapper {
                 .totalPoints(user.getTotalPoint())
                 .accountCreated(user.getAccountCreated())
                 .lastActivity(user.getLastActivity())
+                .recentPosts(recentPosts)
+                .recentComments(recentComments)
                 .build();
     }
 

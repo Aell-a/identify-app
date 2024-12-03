@@ -2,8 +2,6 @@ package com.example.identify.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.yaml.snakeyaml.comments.CommentType;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -16,8 +14,6 @@ public class Comment {
 
     @Enumerated(EnumType.STRING)
     private CommentType type;
-
-    private Long postId;
     private Long parentId;
     private Long userId;
 
@@ -28,5 +24,8 @@ public class Comment {
     private int upvotes = 0;
     private int downvote = 0;
     private int totalPoints = 0;
-    private int numberOfChildren = 0;
+
+    @ManyToOne
+    @JoinColumn(name = "post_id", nullable = false)
+    private Post post;
 }

@@ -1,5 +1,7 @@
 package com.example.identify.dto.user;
 
+import com.example.identify.dto.post.CommentDTO;
+import com.example.identify.dto.post.MiniPostDTO;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -23,4 +25,6 @@ public class Profile {
     private int downvote;
     private List<Long> followedTags;
     private List<Long> badges;
+    private List<MiniPostDTO> recentPosts;
+    private List<CommentDTO> recentComments;
 }
