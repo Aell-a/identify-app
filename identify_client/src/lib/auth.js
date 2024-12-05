@@ -2,19 +2,14 @@
 
 import { login, register, verify } from "./middleware";
 
-const {
-  createContext,
-  useReducer,
-  useEffect,
-  useContext,
-  act,
-} = require("react");
+const { createContext, useReducer, useEffect, useContext } = require("react");
 
 const AuthContext = createContext();
 
 const initialState = {
   id: null,
   user: null,
+  token: null,
   isLoading: false,
   error: null,
 };
@@ -63,30 +58,24 @@ export function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token && !state.user) {
-      verifyToken(token);
-    }
-  }, [state.user]);
+    const checkAuth = async () => {
+      const token = localStorage.getItem("token");
+      if (token && !state.user) {
+        const response = await verify(token);
+        if (!response.success) {
+          localStorage.removeItem("token");
+          dispatch({ type: "LOGOUT" });
+        } else {
+          dispatch({
+            type: "AUTH_SUCCESS",
+            payload: { ...response.data, token },
+          });
+        }
+      }
+    };
 
-  useEffect(() => {
-    if (state.token) {
-      localStorage.setItem("token", state.token);
-    } else {
-      localStorage.removeItem("token");
-    }
-  }, [state.token]);
-
-  const verifyToken = async (token) => {
-    dispatch({ type: "LOADING" });
-    const response = await verify(token);
-
-    if (response.success) {
-      dispatch({ type: "AUTH_SUCCESS", payload: { ...response.data, token } });
-    } else {
-      dispatch({ type: "LOGOUT" });
-    }
-  };
+    checkAuth();
+  }, []);
 
   const handleLogin = async (identifier, password) => {
     dispatch({ type: "LOADING" });
@@ -94,6 +83,7 @@ export function AuthProvider({ children }) {
       const response = await login(identifier, password);
       if (response.success) {
         dispatch({ type: "LOGIN", payload: response.data });
+        localStorage.setItem("token", response.data.token);
       } else {
         dispatch({
           type: "AUTH_FAILURE",
@@ -106,12 +96,14 @@ export function AuthProvider({ children }) {
         type: "AUTH_FAILURE",
         payload: "An unexpected error occurred",
       });
-      return { success: false, error: "An unexpected error occured" };
+      return { success: false, error: "An unexpected error occurred" };
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    localStorage.removeItem("token");
     dispatch({ type: "LOGOUT" });
+    window.location.href = "/";
   };
 
   const handleSignup = async (nickname, email, password) => {
@@ -121,6 +113,7 @@ export function AuthProvider({ children }) {
 
       if (response.success) {
         dispatch({ type: "SIGNUP", payload: response.data });
+        localStorage.setItem("token", response.data.token);
       } else {
         dispatch({
           type: "AUTH_FAILURE",
@@ -133,7 +126,7 @@ export function AuthProvider({ children }) {
         type: "AUTH_FAILURE",
         payload: "An unexpected error occurred",
       });
-      return { success: false, error: "An unexpected error occured" };
+      return { success: false, error: "An unexpected error occurred" };
     }
   };
 
@@ -153,7 +146,7 @@ export function AuthProvider({ children }) {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context == undefined) {
+  if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;

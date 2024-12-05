@@ -6,6 +6,8 @@ import Gallery from "./Gallery";
 import LabelHolder from "./Label";
 import { useCallback } from "react";
 import MiniUserProfile from "../Appwide/MiniUserProfile";
+import VoteButtons from "../Appwide/VoteButtons";
+import placeholder from "@/app/public/placeholder.png";
 
 export default function PostDetails({ post }) {
   const timeSinceLastActivity = useCallback((dateArray) => {
@@ -49,17 +51,13 @@ export default function PostDetails({ post }) {
         <div className="bg-gray-800 rounded-lg p-6">
           <MiniUserProfile user={post.user}>
             <div className="flex items-center mb-4">
-              {post.user.profilePicture ? (
-                <Image
-                  src={post.user.profilePicture}
-                  alt={post.user.nickname}
-                  width={50}
-                  height={50}
-                  className="rounded-full mr-4"
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-full mr-4 bg-black" />
-              )}
+              <Image
+                src={post.user.profilePicture || placeholder}
+                alt={post.user.nickname}
+                width={50}
+                height={50}
+                className="rounded-full mr-4"
+              />
               <div>
                 <p className="font-semibold text-gray-100">
                   {post.user.nickname}
@@ -67,9 +65,11 @@ export default function PostDetails({ post }) {
               </div>
             </div>
           </MiniUserProfile>
-          <h1 className="text-3xl font-bold mb-4 text-gray-100">
-            {post.title}
-          </h1>
+          <div>
+            <h1 className="text-3xl font-bold mb-4 text-gray-100">
+              {post.title}
+            </h1>
+          </div>
           <Gallery media={post.imageUrls} />
           <div className="mt-6">
             <p className="text-gray-300 mb-4">{post.description}</p>
@@ -80,13 +80,18 @@ export default function PostDetails({ post }) {
                 </Badge>
               ))}
             </div>
-            <div className="flex items-center text-sm text-gray-400">
-              <div>
+            <div className="flex-row items-center text-sm text-gray-400">
+              <div className="mb-2">
                 <p>Created: {timeSinceLastActivity(post.createdAt)} ago</p>
                 {formatDate(post.updatedAt) !== formatDate(post.createdAt) && (
                   <p>Updated: {timeSinceLastActivity(post.updatedAt)} ago</p>
                 )}
               </div>
+              <VoteButtons
+                upvotes={post.upvotes}
+                downvotes={post.downvotes}
+                postId={post.id}
+              />
             </div>
           </div>
         </div>
@@ -138,9 +143,7 @@ export default function PostDetails({ post }) {
                   <div className="text-xs text-gray-400 mb-1">Colors</div>
                   <div className="flex flex-wrap gap-2">
                     {post.colors.map((color, index) => (
-                      <Badge key={index} variant="outline">
-                        {color}
-                      </Badge>
+                      <Badge key={index}>{color}</Badge>
                     ))}
                   </div>
                 </div>
@@ -148,9 +151,7 @@ export default function PostDetails({ post }) {
                   <div className="text-xs text-gray-400 mb-1">Shapes</div>
                   <div className="flex flex-wrap gap-2">
                     {post.shapes.map((shape, index) => (
-                      <Badge key={index} variant="outline">
-                        {shape}
-                      </Badge>
+                      <Badge key={index}>{shape}</Badge>
                     ))}
                   </div>
                 </div>
@@ -158,9 +159,7 @@ export default function PostDetails({ post }) {
                   <div className="text-xs text-gray-400 mb-1">Materials</div>
                   <div className="flex flex-wrap gap-2">
                     {post.materials.map((material, index) => (
-                      <Badge key={index} variant="outline">
-                        {material}
-                      </Badge>
+                      <Badge key={index}>{material}</Badge>
                     ))}
                   </div>
                 </div>

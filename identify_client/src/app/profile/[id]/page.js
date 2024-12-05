@@ -22,7 +22,7 @@ export default function ProfilePage({ params }) {
   const fetchProfile = useCallback(async (id) => {
     try {
       const response = await getProfile(id);
-      setProfile(response);
+      setProfile(response.data);
       if (response) {
         setEditedBio(response.bio);
       }
@@ -77,7 +77,6 @@ export default function ProfilePage({ params }) {
         processedImage,
         token
       );
-
       if (response.success) {
         setProfile(response.data);
         setIsEditing(false);
@@ -311,7 +310,7 @@ export default function ProfilePage({ params }) {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-gray-800 p-4 rounded-lg">
             <ImageCropper
-              image={selectedImage}
+              image={selectedImage.dataUrl}
               onCropComplete={handleCropComplete}
             />
           </div>

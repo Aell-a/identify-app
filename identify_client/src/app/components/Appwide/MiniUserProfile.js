@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import * as HoverCard from "@radix-ui/react-hover-card";
 import { cn } from "@/lib/utils";
+import placeholder from "@/app/public/placeholder.png";
 
 export default function MiniUserProfile({
   user,
@@ -43,7 +44,7 @@ export default function MiniUserProfile({
           >
             <div className="flex items-center space-x-4 mb-2">
               <Image
-                src={user.profilePicture}
+                src={user.profilePicture || placeholder}
                 alt={user.nickname}
                 width={48}
                 height={48}
@@ -51,7 +52,10 @@ export default function MiniUserProfile({
               />
               <div>
                 <h3 className="font-semibold text-gray-100">{user.nickname}</h3>
-                <p className="text-sm text-gray-400">Joined: {user.joinDate}</p>
+                <p className="text-sm text-gray-400">
+                  Joined: {user.createdAt[2]}/{user.createdAt[1]}/
+                  {user.createdAt[0]}
+                </p>
               </div>
             </div>
             <p className="text-gray-300 mb-2 line-clamp-2">{user.bio}</p>

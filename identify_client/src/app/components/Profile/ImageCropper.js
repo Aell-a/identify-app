@@ -62,6 +62,10 @@ export default function ImageCropper({ image, onCropComplete }) {
       >
         <Image
           src={image}
+          width={0}
+          height={0}
+          sizes="100vw"
+          style={{ width: "100%", height: "auto" }}
           id="cropImage"
           alt="uploaded image"
           onLoad={onImageLoad}

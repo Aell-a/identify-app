@@ -10,6 +10,14 @@ export default function Navbar() {
   const { user, id, logout } = useAuth();
   const [isAuthPopupOpen, setIsAuthPopupOpen] = useState(false);
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
+
   return (
     <nav className="bg-gray-800 shadow-lg">
       <div className="container mx-auto px-4">
@@ -42,7 +50,7 @@ export default function Navbar() {
                 </Link>
 
                 <button
-                  onClick={logout}
+                  onClick={handleLogout}
                   className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
                 >
                   Logout
