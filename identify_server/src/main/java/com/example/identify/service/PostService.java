@@ -1,9 +1,6 @@
 package com.example.identify.service;
 
-import com.example.identify.dto.post.CommentDTO;
-import com.example.identify.dto.post.MiniPostDTO;
-import com.example.identify.dto.post.PostDTO;
-import com.example.identify.dto.post.PostRequest;
+import com.example.identify.dto.post.*;
 import com.example.identify.dto.user.MiniProfile;
 import com.example.identify.mapper.CommentMapper;
 import com.example.identify.model.*;
@@ -19,12 +16,15 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
 public class PostService {
-    @Autowired
-    private PostRepository postRepository;
+    public final PostRepository postRepository;
+    public PostService(PostRepository postRepository) {
+        this.postRepository = postRepository;
+    }
     @Autowired
     private WikidataLabelRepository wikidataLabelRepository;
     @Autowired
@@ -131,12 +131,28 @@ public class PostService {
         }
     }
 
-    public Comment addComment(Long postId, Comment comment) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(()-> new RuntimeException("Post not found"));
+    public Comment addComment(CommentRequest request) {
+        Post post = postRepository.findById(request.getPostId())
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        Comment comment = new Comment();
+        comment.setParentId(request.getParentId());
+        comment.setUserId(request.getUserId());
+        comment.setContent(request.getContent());
+        if (request.getParentId() != null) {
+            comment.setType(CommentType.REPLY);
+        } else {
+            CommentType type;
+            if (Objects.equals(request.getType(), "Deep Dive")) {
+                type = CommentType.DEEPDIVE;
+            } else {
+                type = CommentType.fromString(request.getType());
+            }
+            comment.setType(type);
+        }
         comment.setPost(post);
         post.getComments().add(comment);
         post.setNumberOfComments(post.getNumberOfComments() + 1);
+        commentRepository.save(comment);
         postRepository.save(post);
         return comment;
     }

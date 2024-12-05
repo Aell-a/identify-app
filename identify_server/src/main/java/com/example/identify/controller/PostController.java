@@ -1,18 +1,17 @@
 package com.example.identify.controller;
 
 import com.example.identify.dto.media.MediaRequest;
-import com.example.identify.dto.post.CommentDTO;
-import com.example.identify.dto.post.MiniPostDTO;
-import com.example.identify.dto.post.PostDTO;
-import com.example.identify.dto.post.PostRequest;
+import com.example.identify.dto.post.*;
 import com.example.identify.mapper.CommentMapper;
 import com.example.identify.model.Comment;
 import com.example.identify.model.Post;
 import com.example.identify.mapper.PostMapper;
 import com.example.identify.service.PostService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +30,9 @@ public class PostController {
     private PostMapper postMapper;
     @Autowired
     private CommentMapper commentMapper;
+    @Qualifier("objectMapper")
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @GetMapping("/main")
     public ResponseEntity<List<MiniPostDTO> > getMainPagePosts(@RequestParam(defaultValue = "0") int page,
@@ -115,9 +117,17 @@ public class PostController {
         }
     }
 
-    @PostMapping("/{postId}/comment")
-    public ResponseEntity<CommentDTO> addComment(@PathVariable Long postId, @RequestBody Comment comment) {
-        Comment newComment = postService.addComment(postId, comment);
+    @PostMapping("/comment/{postId}")
+    public ResponseEntity<CommentDTO> addComment(@PathVariable Long postId, @RequestBody String req) {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        CommentRequest commentRequest = new CommentRequest();
+        try {
+            commentRequest = objectMapper.readValue(req, CommentRequest.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        Comment newComment = postService.addComment(commentRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(commentMapper.toCommentDTO(newComment));
     }
 }

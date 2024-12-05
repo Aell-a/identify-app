@@ -29,7 +29,6 @@ import java.util.Optional;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -110,6 +109,7 @@ public class UserService {
         }
 
         User userEntity = user.get();
+        MiniProfile userMini = getMiniProfile(userEntity.getId());
 
         List<MiniPostDTO> recentPosts = postRepository.findRecentPostsByUserId(userEntity.getId())
                 .stream()
@@ -123,7 +123,7 @@ public class UserService {
         List<CommentDTO> recentComments = commentRepository.findRecentCommentsByUserId(userEntity.getId())
                 .stream()
                 .limit(5)
-                .map(comment -> new CommentDTO(comment.getId(), comment.getPost().getId(), comment.getContent(), comment.getType(), comment.getCreatedAt()))
+                .map(comment -> new CommentDTO(comment.getId(), comment.getParentId(), comment.getPost().getId(), comment.getContent(), comment.getType(), comment.getCreatedAt(), userMini))
                 .toList();
 
         return userMapper.toProfile(userEntity, recentPosts, recentComments);
@@ -141,6 +141,7 @@ public class UserService {
     // Updates user profile
     public Profile updateProfile(Long id, Profile updatedProfile) {
         User user = userRepository.findById(id).orElse(null);
+        MiniProfile userMini = getMiniProfile(id);
 
         if (user != null) {
             user.setBio(updatedProfile.getBio());
@@ -157,7 +158,7 @@ public class UserService {
             List<CommentDTO> recentComments = commentRepository.findRecentCommentsByUserId(user.getId())
                     .stream()
                     .limit(5)
-                    .map(comment -> new CommentDTO(comment.getId(), comment.getPost().getId(), comment.getContent(), comment.getType(), comment.getCreatedAt()))
+                    .map(comment -> new CommentDTO(comment.getId(), comment.getParentId(), comment.getPost().getId(), comment.getContent(), comment.getType(), comment.getCreatedAt(), userMini))
                     .toList();
 
             return userMapper.toProfile(user, recentPosts, recentComments);
