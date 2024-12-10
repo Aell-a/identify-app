@@ -16,29 +16,24 @@ const handleApiResponse = async (apiCall) => {
       status: response.status,
     };
   } catch (error) {
-    console.log(error);
     return {
       success: false,
-      error: error.response.data.error
-        ? error.response.data.error
-        : error.message,
-      status: error.status,
+      error: error.response?.data?.error || error.message,
+      status: error.response?.status,
     };
   }
 };
 
 export const checkEmail = async (email) => {
-  const result = await handleApiResponse(() =>
+  return await handleApiResponse(() =>
     api.get(`/users/checkByEmail`, { params: { email } })
   );
-  return result.status === 202;
 };
 
 export const checkNickname = async (nickname) => {
-  const result = await handleApiResponse(() =>
+  return await handleApiResponse(() =>
     api.get(`/users/checkByNickname`, { params: { nickname } })
   );
-  return result.status === 202;
 };
 
 export const register = async (nickname, email, password) => {
@@ -54,6 +49,10 @@ export const login = async (identifier, password) => {
 };
 
 export const verify = async (token) => {
+  if (!token) {
+    return { success: false, error: "No token provided" };
+  }
+
   return await handleApiResponse(() =>
     api.get(`/users/verify`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -62,10 +61,7 @@ export const verify = async (token) => {
 };
 
 export const getProfile = async (id) => {
-  const response = await api.get(`/users/profile/${id}`);
-  if (response.status !== 404) {
-    return response.data;
-  }
+  return await handleApiResponse(() => api.get(`/users/profile/${id}`));
 };
 
 export const editProfile = async (profile, profilePicture = null, token) => {
@@ -142,4 +138,13 @@ export const createPost = async (formData, token) => {
   });
 };
 
-export const getComments = async (postId) => {};
+export const addComment = async (newComment, postId, token) => {
+  return await handleApiResponse(() =>
+    api.post(`/posts/comment/${postId}`, newComment, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+  );
+};

@@ -1,111 +1,99 @@
 import { useState } from "react";
 import Image from "next/image";
-import { MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import VoteButtons from "../Appwide/VoteButtons";
 import MiniUserProfile from "../Appwide/MiniUserProfile";
+import AddComment from "./AddComment";
+import placeholder from "@/app/public/placeholder.png";
+import { useAuth } from "@/lib/auth";
 
-export default function Comment({ comment, depth = 0 }) {
-  const [showReplies, setShowReplies] = useState(depth < 2);
-  const [isReplying, setIsReplying] = useState(false);
-  const maxDepth = 6;
+export default function Comment({ comment, onAddReply, depth }) {
+  const [showReplyForm, setShowReplyForm] = useState(false);
+  const { user } = useAuth();
+
+  const handleAddReply = (replyContent) => {
+    onAddReply(comment.id, replyContent);
+    setShowReplyForm(false);
+  };
+
+  const handleCancel = () => {
+    setShowReplyForm(false);
+  };
 
   return (
-    <div className={`relative ${depth > 0 ? "mt-4" : ""}`}>
-      {depth > 0 && (
-        <div
-          className="absolute left-0 top-0 bottom-0 border-l-2 border-gray-700"
-          style={{ left: "24px" }}
-        />
-      )}
-      <div
-        className={`relative flex gap-4 ${depth > 0 ? "ml-12" : ""}`}
-        style={{ marginLeft: depth > 0 ? `${depth * 3}rem` : "" }}
-      >
-        <div className="flex-shrink-0 mt-1">
+    <div
+      className={`bg-gray-700 rounded-lg p-4 ${
+        depth > 0 ? "ml-4 border-l-2 border-gray-600" : ""
+      }`}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center space-x-2">
           <Image
-            src={comment.user.profilePicture}
+            src={comment.user.profilePicture || placeholder}
             alt={comment.user.nickname}
             width={32}
             height={32}
             className="rounded-full"
           />
-        </div>
-        <div className="flex-grow">
-          <div className="bg-gray-700/50 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center space-x-2">
-                <div className="relative group">
-                  <span className="font-semibold text-gray-200 hover:underline cursor-pointer">
-                    {comment.user.nickname}
-                  </span>
-                  <MiniUserProfile user={comment.user} />
-                </div>
-                <span className="text-sm text-gray-400">• 2h ago</span>
-              </div>
-              <VoteButtons
-                upvotes={comment.upvotes}
-                downvotes={comment.downvotes}
-                postId={comment.id}
-              />
-            </div>
-            <p className="text-gray-300">{comment.content}</p>
-            <div className="flex items-center space-x-4 mt-2 text-sm">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-gray-400 hover:text-gray-200"
-                onClick={() => setIsReplying(!isReplying)}
-              >
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Reply
-              </Button>
-              {comment.replies?.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-gray-400 hover:text-gray-200"
-                  onClick={() => setShowReplies(!showReplies)}
-                >
-                  {showReplies ? (
-                    <ChevronUp className="h-4 w-4 mr-2" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 mr-2" />
-                  )}
-                  {showReplies ? "Hide" : "Show"} {comment.replies.length}{" "}
-                  {comment.replies.length === 1 ? "reply" : "replies"}
-                </Button>
-              )}
-            </div>
+          <div className="relative group">
+            <span className="font-semibold text-gray-200 hover:underline cursor-pointer">
+              {comment.user.nickname}
+            </span>
+            <MiniUserProfile user={comment.user} />
           </div>
-          {isReplying && (
-            <div className="mt-4">
-              <textarea
-                className="w-full p-3 rounded-lg bg-gray-700 text-gray-100 border border-gray-600 focus:outline-none focus:border-gray-500"
-                placeholder="Write a reply..."
-                rows={3}
-              />
-              <div className="flex justify-end gap-2 mt-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsReplying(false)}
-                >
-                  Cancel
-                </Button>
-                <Button size="sm">Reply</Button>
-              </div>
-            </div>
-          )}
-          {showReplies && comment.replies && depth < maxDepth && (
-            <div className="space-y-4">
-              {comment.replies.map((reply) => (
-                <Comment key={reply.id} comment={reply} depth={depth + 1} />
-              ))}
-            </div>
-          )}
         </div>
       </div>
+      <p className="text-gray-300 mb-2">{comment.content}</p>
+      {depth === 0 && comment.type && (
+        <span
+          className={`inline-block text-white text-xs px-2 py-1 rounded-full mb-2 ${
+            comment.type.toLowerCase() === "question"
+              ? "bg-red-600"
+              : comment.type.toLowerCase() === "guess"
+              ? "bg-green-600"
+              : comment.type.toLowerCase() === "discussion"
+              ? "bg-yellow-600"
+              : comment.type.toLowerCase() === "deep dive"
+              ? "bg-purple-600"
+              : "bg-blue-600"
+          }`}
+        >
+          {comment.type.charAt(0).toUpperCase() +
+            comment.type.slice(1).toLowerCase().replace("pd", "p D")}
+        </span>
+      )}
+      {user && (
+        <div className="flex items-center space-x-4 text-sm text-gray-400">
+          <button
+            onClick={() => setShowReplyForm(!showReplyForm)}
+            className="hover:text-gray-200"
+          >
+            Reply
+          </button>
+          <VoteButtons
+            upvotes={comment.upvotes || 0}
+            downvotes={comment.downvotes || 0}
+            postId={comment.id}
+          />
+        </div>
+      )}
+      {showReplyForm && (
+        <div className="mt-4">
+          <AddComment onSubmit={handleAddReply} isReply={true} />
+        </div>
+      )}
+      {comment.replies && comment.replies.length > 0 && (
+        <div className="mt-4 space-y-4">
+          {comment.replies.map((reply) => (
+            <Comment
+              key={reply.id}
+              comment={reply}
+              onAddReply={onAddReply}
+              depth={depth + 1}
+              onCancel={handleCancel}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
