@@ -9,12 +9,11 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${DB_DATABASE}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql:///${DB_DATABASE}?cloudSqlInstance=${PROJECT_ID}:us-central1:identify-db&socketFactory=com.google.cloud.sql.postgres.SocketFactory
       - SPRING_DATASOURCE_USERNAME=${DB_USER}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - SPRING_PROFILES_ACTIVE=prod
-    volumes:
-      - uploads:/app/uploads
+      - BUCKET_NAME=${BUCKET_NAME}
 
   client:
     build:
@@ -25,6 +24,3 @@ services:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-
-volumes:
-  uploads:

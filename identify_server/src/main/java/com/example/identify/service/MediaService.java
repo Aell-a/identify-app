@@ -1,5 +1,9 @@
 package com.example.identify.service;
 
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import com.example.identify.model.Media;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -7,33 +11,33 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 import java.util.UUID;
 
 @Service
 public class MediaService {
 
-    @Value("${file.storage.location}")
-    private String fileStorageLocation;
+    @Value("${gcp.bucket.name}")
+    private String bucketName;
 
-    @Value("${file.base-url}")
-    private String fileBaseUrl;
+    private final Storage storage;
+
+    public MediaService() {
+        this.storage = StorageOptions.getDefaultInstance().getService();
+    }
 
     public Media uploadMedia(MultipartFile file, Long userId) throws IOException {
-        Path rootLocation = Paths.get(fileStorageLocation);
-        Path userDirectory = rootLocation.resolve(String.valueOf(userId));
-
-        Files.createDirectories(userDirectory);
-
         String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-        Path destinationFile = userDirectory.resolve(filename);
-        Files.copy(file.getInputStream(), destinationFile, StandardCopyOption.REPLACE_EXISTING);
+        String objectName = userId + "/" + filename;
+        
+        BlobId blobId = BlobId.of(bucketName, objectName);
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+                .setContentType(file.getContentType())
+                .build();
 
-        String mediaUrl = fileBaseUrl + userId + "/" + filename;
+        storage.create(blobInfo, file.getBytes());
+
+        String mediaUrl = String.format("https://storage.googleapis.com/%s/%s", bucketName, objectName);
 
         Media media = new Media();
         media.setMediaUrl(mediaUrl);

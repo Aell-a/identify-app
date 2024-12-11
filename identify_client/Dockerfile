@@ -1,23 +1,32 @@
-FROM node:23-alpine3.19 AS base
+# Use the appropriate base image for amd64
+FROM --platform=linux/amd64 node:21 AS build
 
-FROM base AS deps
-RUN apk add --no-cache libc6-compat
+# Set the working directory
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
 
-FROM deps AS builder
+# Copy package.json and package-lock.json
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy the rest of the application code
 COPY . .
+
+# Build the application
 RUN npm run build
 
-FROM node:23-alpine3.19 AS production
-WORKDIR /app
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/public ./public
+# Use Node.js for the production server
+FROM --platform=linux/amd64 node:21 AS production
 
-ENV PORT=8080
+# Set the working directory
+WORKDIR /app
+
+# Copy built files from the build stage
+COPY --from=build /app ./
+
+# Expose the port for the Next.js server
 EXPOSE 8080
 
-CMD ["sh", "-c", "npm start -- -p ${PORT}"]
+# Start the Next.js application
+CMD ["npm", "start", "--", "-p", "8080"]
