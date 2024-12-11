@@ -27,6 +27,10 @@ public class MediaService {
     }
 
     public Media uploadMedia(MultipartFile file, Long userId) throws IOException {
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("File must not be empty");
+        }
+
         String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
         String objectName = userId + "/" + filename;
         
@@ -35,7 +39,13 @@ public class MediaService {
                 .setContentType(file.getContentType())
                 .build();
 
-        storage.create(blobInfo, file.getBytes());
+        try {
+            storage.create(blobInfo, file.getBytes());
+        } catch (Exception e) {
+            // Log the error and rethrow it
+            System.err.println("Error uploading file to Google Cloud Storage: " + e.getMessage());
+            throw new IOException("Failed to upload media", e);
+        }
 
         String mediaUrl = String.format("https://storage.googleapis.com/%s/%s", bucketName, objectName);
 

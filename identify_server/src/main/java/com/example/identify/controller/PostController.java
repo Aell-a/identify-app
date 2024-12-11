@@ -5,7 +5,6 @@ import com.example.identify.dto.post.*;
 import com.example.identify.mapper.CommentMapper;
 import com.example.identify.model.Comment;
 import com.example.identify.model.Post;
-import com.example.identify.mapper.PostMapper;
 import com.example.identify.service.PostService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,8 +25,6 @@ import java.util.stream.Collectors;
 public class PostController {
     @Autowired
     private PostService postService;
-    @Autowired
-    private PostMapper postMapper;
     @Autowired
     private CommentMapper commentMapper;
     @Qualifier("objectMapper")

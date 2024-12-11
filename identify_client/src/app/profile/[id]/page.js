@@ -67,7 +67,7 @@ export default function ProfilePage({ params }) {
       dateArray[4],
       dateArray[5]
     );
-    return date.toLocaleDateString();
+    return date.toLocaleDateString("en-GB");
   }, []);
 
   const handleSaveProfile = useCallback(async () => {
