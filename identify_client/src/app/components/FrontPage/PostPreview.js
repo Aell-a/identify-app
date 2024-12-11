@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { MessageSquare, ThumbsUp } from "lucide-react";
-import placeholder from "@/app/public/placeholder.png";
+import placeholder from "../../../../public/placeholder.png";
 
 const truncateText = (text, maxLength) => {
   if (text.length <= maxLength) return text;

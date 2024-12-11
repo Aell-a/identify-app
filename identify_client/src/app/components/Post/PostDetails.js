@@ -7,7 +7,7 @@ import LabelHolder from "./Label";
 import { useCallback } from "react";
 import MiniUserProfile from "../Appwide/MiniUserProfile";
 import VoteButtons from "../Appwide/VoteButtons";
-import placeholder from "@/app/public/placeholder.png";
+import placeholder from "../../../../public/placeholder.png";
 
 export default function PostDetails({ post }) {
   const timeSinceLastActivity = useCallback((dateArray) => {

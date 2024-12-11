@@ -3,7 +3,7 @@ import Image from "next/image";
 import VoteButtons from "../Appwide/VoteButtons";
 import MiniUserProfile from "../Appwide/MiniUserProfile";
 import AddComment from "./AddComment";
-import placeholder from "@/app/public/placeholder.png";
+import placeholder from "../../../../public/placeholder.png";
 import { useAuth } from "@/lib/auth";
 
 export default function Comment({ comment, onAddReply, depth }) {
@@ -26,21 +26,22 @@ export default function Comment({ comment, onAddReply, depth }) {
       }`}
     >
       <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center space-x-2">
-          <Image
-            src={comment.user.profilePicture || placeholder}
-            alt={comment.user.nickname}
-            width={32}
-            height={32}
-            className="rounded-full"
-          />
-          <div className="relative group">
-            <span className="font-semibold text-gray-200 hover:underline cursor-pointer">
-              {comment.user.nickname}
-            </span>
-            <MiniUserProfile user={comment.user} />
+        <MiniUserProfile user={comment.user}>
+          <div className="flex items-center mb-4">
+            <Image
+              src={comment.user.profilePicture || placeholder}
+              alt={comment.user.nickname}
+              width={50}
+              height={50}
+              className="rounded-full mr-4"
+            />
+            <div>
+              <p className="font-semibold text-gray-100">
+                {comment.user.nickname}
+              </p>
+            </div>
           </div>
-        </div>
+        </MiniUserProfile>
       </div>
       <p className="text-gray-300 mb-2">{comment.content}</p>
       {depth === 0 && comment.type && (

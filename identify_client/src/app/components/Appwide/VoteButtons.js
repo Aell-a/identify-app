@@ -1,13 +1,10 @@
 import { ThumbsUp, ThumbsDown } from "lucide-react";
 import { useState } from "react";
 
-export default function VoteButtons({ upvotes, downvotes, postId }) {
+export default function VoteButtons({ upvotes, downvotes, id, type = "post" }) {
   const [votes, setVotes] = useState({ upvotes, downvotes });
 
   const handleVote = async (voteType) => {
-    // Implement the voting logic here
-    // You'll need to call an API to update the vote count
-    // For now, we'll just update the local state
     if (voteType === "up") {
       setVotes((prev) => ({ ...prev, upvotes: prev.upvotes + 1 }));
     } else {

@@ -1,7 +1,10 @@
 FROM openjdk:21-slim
 WORKDIR /app
 COPY target/*.jar app.jar
-COPY env.properties env.properties
-VOLUME /app/uploads
+
+ENV SPRING_PROFILES_ACTIVE=prod
+ENV PORT=8080
+
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","app.jar"]
+
+CMD ["java", "-jar", "app.jar", "--server.port=${PORT}"]

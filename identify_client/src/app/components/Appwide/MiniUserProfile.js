@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import * as HoverCard from "@radix-ui/react-hover-card";
 import { cn } from "@/lib/utils";
-import placeholder from "@/app/public/placeholder.png";
+import placeholder from "../../../../public/placeholder.png";
 
 export default function MiniUserProfile({
   user,
