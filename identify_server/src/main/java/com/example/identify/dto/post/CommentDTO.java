@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Data
 @Builder
@@ -20,5 +21,7 @@ public class CommentDTO {
     private LocalDateTime createdAt;
     private MiniProfile user;
     private int upvotes;
+    private Set<Long> upvotedUserIds;
     private int downvotes;
+    private Set<Long> downvotedUserIds;
 }

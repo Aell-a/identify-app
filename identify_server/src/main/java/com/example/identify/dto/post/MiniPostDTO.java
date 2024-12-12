@@ -15,8 +15,7 @@ public class MiniPostDTO {
     private MiniProfile user;
     private String title;
     private String description;
-    private int upvotes;
-    private int downvotes;
+    private Set<Long> upvotedUserIds;
     private int totalPoints;
     private Set<Tag> tags;
     private String imageUrl;

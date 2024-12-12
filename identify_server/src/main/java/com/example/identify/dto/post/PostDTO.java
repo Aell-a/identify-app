@@ -24,7 +24,9 @@ public class PostDTO {
     private PostStatus status;
     private int numberOfComments;
     private int upvotes;
+    private Set<Long> upvotedUserIds;
     private int downvotes;
+    private Set<Long> downvotedUserIds;
     private int totalPoints;
     private Set<Tag> tags;
     private MiniProfile user;
