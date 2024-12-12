@@ -47,6 +47,7 @@ public class PostMapper {
                 .totalPoints(post.getTotalPoints())
                 .tags(post.getTags())
                 .imageUrl(post.getMystery().getMedias().get(0).getMediaUrl())
+                .createdAt(post.getCreatedAt())
                 .build();
     }
 }

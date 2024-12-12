@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { MessageSquare, ThumbsUp } from "lucide-react";
 import placeholder from "../../../../public/placeholder.png";
+import { useCallback } from "react";
 
 const truncateText = (text, maxLength) => {
   if (text.length <= maxLength) return text;
@@ -8,6 +9,18 @@ const truncateText = (text, maxLength) => {
 };
 
 export default function PostPreview({ post }) {
+  const formatDate = useCallback((dateArray) => {
+    const date = new Date(
+      dateArray[0],
+      dateArray[1] - 1,
+      dateArray[2],
+      dateArray[3],
+      dateArray[4],
+      dateArray[5]
+    );
+    return date.toLocaleDateString("en-GB");
+  }, []);
+
   return (
     <div className="bg-gray-800 rounded-lg shadow-md overflow-hidden transition-transform duration-200 hover:scale-105 max-w-2xl mx-auto mb-8">
       <div className="relative h-64 w-full">
@@ -47,6 +60,9 @@ export default function PostPreview({ post }) {
             <div className="flex items-center space-x-1">
               <MessageSquare className="w-4 h-4" />
               <span>{post.commentCount}</span>
+            </div>
+            <div>
+              <p>Posted at: {formatDate(post.createdAt)}</p>
             </div>
           </div>
           <div className="flex space-x-2">

@@ -5,6 +5,7 @@ import com.example.identify.model.Tag;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
@@ -17,4 +18,5 @@ public class MiniPostDTO {
     private int totalPoints;
     private Set<Tag> tags;
     private String imageUrl;
+    private LocalDateTime createdAt;
 }
