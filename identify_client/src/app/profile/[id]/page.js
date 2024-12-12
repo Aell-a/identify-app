@@ -158,8 +158,9 @@ export default function ProfilePage({ params }) {
                 <Image
                   src={previewImage || profile.profilePicture}
                   alt={profile.nickname}
-                  layout="fill"
-                  objectFit="cover"
+                  fill
+                  style={{ objectFit: "cover" }}
+                  priority
                 />
               ) : (
                 <div className="w-full h-full bg-gray-700 flex items-center justify-center">

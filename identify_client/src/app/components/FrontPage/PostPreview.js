@@ -27,8 +27,9 @@ export default function PostPreview({ post }) {
         <Image
           src={post.imageUrl}
           alt={post.title}
-          layout="fill"
-          objectFit="cover"
+          fill
+          style={{ objectFit: "cover" }}
+          priority
         />
       </div>
       <div className="p-4">

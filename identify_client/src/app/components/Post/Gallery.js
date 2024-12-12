@@ -21,9 +21,10 @@ export default function Gallery({ media }) {
         <Image
           src={media[currentIndex]}
           alt={`Image ${currentIndex + 1}`}
-          layout="fill"
-          objectFit="contain"
+          fill
+          style={{ objectFit: "contain" }}
           className="rounded-lg"
+          priority
         />
         <button
           className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full"
