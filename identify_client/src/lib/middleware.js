@@ -148,3 +148,14 @@ export const addComment = async (newComment, postId, token) => {
     })
   );
 };
+
+export const handleVote = async (voteRequest, token) => {
+  return await handleApiResponse(async () =>
+    api.post("/posts/vote", voteRequest, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+  );
+};

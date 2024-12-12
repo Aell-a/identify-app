@@ -90,7 +90,11 @@ export default function PostDetails({ post }) {
               <VoteButtons
                 upvotes={post.upvotes}
                 downvotes={post.downvotes}
+                type="post"
                 postId={post.id}
+                commentId={null}
+                upvotedUserIds={post.upvotedUserIds}
+                downvotedUserIds={post.downvotedUserIds}
               />
             </div>
           </div>

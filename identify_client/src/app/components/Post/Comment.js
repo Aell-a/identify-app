@@ -73,7 +73,11 @@ export default function Comment({ comment, onAddReply, depth }) {
           <VoteButtons
             upvotes={comment.upvotes || 0}
             downvotes={comment.downvotes || 0}
-            postId={comment.id}
+            type="comment"
+            postId={comment.postId}
+            commentId={comment.id}
+            upvotedUserIds={comment.upvotedUserIds}
+            downvotedUserIds={comment.downvotedUserIds}
           />
         </div>
       )}
