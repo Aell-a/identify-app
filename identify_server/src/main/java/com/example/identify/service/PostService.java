@@ -161,7 +161,7 @@ public class PostService {
         return comment;
     }
 
-    public PostDTO handleVote(VoteRequest voteRequest) {
+    public Post handleVote(VoteRequest voteRequest) {
         User voter = userRepository.findById(voteRequest.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Post post = postRepository.findById(voteRequest.getPostId())
@@ -170,13 +170,13 @@ public class PostService {
             User poster = userRepository.findById(post.getUserId())
                     .orElseThrow(() -> new RuntimeException("User not found"));
             if (voteRequest.getVoteType().equals("upvote")) {
-                post.setUpvotes(post.getUpvotes() + 1);
                 post.getUpvotedUserIds().add(voter.getId());
+                post.setUpvotes(post.getUpvotedUserIds().size());
                 poster.setUpvotes(poster.getUpvotes() + 1);
                 poster.setTotalPoints(poster.getTotalPoints() + 1);
             } else {
-                post.setDownvotes(post.getDownvotes() + 1);
                 post.getDownvotedUserIds().add(voter.getId());
+                post.setDownvotes(post.getDownvotedUserIds().size());
                 poster.setDownvotes(poster.getDownvotes() + 1);
                 poster.setTotalPoints(poster.getTotalPoints() - 1);
             }
@@ -186,13 +186,13 @@ public class PostService {
             User commenter = userRepository.findById(comment.getUserId())
                     .orElseThrow(() -> new RuntimeException("User not found"));
             if (voteRequest.getVoteType().equals("upvote")) {
-                comment.setUpvotes(comment.getUpvotes() + 1);
                 comment.getUpvotedUserIds().add(voter.getId());
+                comment.setUpvotes(comment.getUpvotedUserIds().size());
                 commenter.setUpvotes(commenter.getUpvotes() + 1);
                 commenter.setTotalPoints(commenter.getTotalPoints() + 1);
             } else {
-                comment.setDownvotes(comment.getDownvotes() + 1);
                 comment.getDownvotedUserIds().add(voter.getId());
+                comment.setDownvotes(comment.getDownvotedUserIds().size());
                 commenter.setDownvotes(commenter.getDownvotes() + 1);
                 commenter.setTotalPoints(commenter.getTotalPoints() - 1);
             }
@@ -200,6 +200,6 @@ public class PostService {
             commentRepository.save(comment);
         }
         postRepository.save(post);
-        return getPostById(post.getId());
+        return post;
     }
 }

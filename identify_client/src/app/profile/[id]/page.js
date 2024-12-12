@@ -233,7 +233,11 @@ export default function ProfilePage({ params }) {
             <p>
               Last activity: {timeSinceLastActivity(profile.lastActivity)} ago
             </p>
-            <p>Total upvotes: {profile.totalPoints}</p>
+            <p>Points: {profile.totalPoints}</p>
+            <div className="flex">
+              <p className="mr-2 text-blue-500">+{profile.upvote}</p>
+              <p className="text-red-500">-{profile.downvote}</p>
+            </div>
           </div>
           <div>
             <h2 className="text-xl font-semibold mb-2">Followed Tags</h2>

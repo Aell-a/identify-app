@@ -60,7 +60,7 @@ export default function PostPreview({ post }) {
             </div>
             <div className="flex items-center space-x-1">
               <MessageSquare className="w-4 h-4" />
-              <span>{post.commentCount}</span>
+              <span>{post.numberOfComments}</span>
             </div>
             <div>
               <p>Posted at: {formatDate(post.createdAt)}</p>

@@ -34,8 +34,10 @@ public class PostController {
     @GetMapping("/main")
     public ResponseEntity<List<MiniPostDTO> > getMainPagePosts(@RequestParam(defaultValue = "0") int page,
                                               @RequestParam(defaultValue = "5") int size) {
-        if (postService.getMiniPosts(page, size) != null) {
-            return ResponseEntity.ok(postService.getMiniPosts(page, size));
+        List<MiniPostDTO> posts = postService.getMiniPosts(page, size);
+        if (posts != null) {
+            posts.sort((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()));
+            return ResponseEntity.ok(posts);
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -131,8 +133,8 @@ public class PostController {
     @PostMapping("/vote")
     public ResponseEntity<?> handleVote(@RequestBody VoteRequest voteRequest) {
         if (voteRequest.getUserId() != null && voteRequest.getPostId() != null) {
-            PostDTO postDTO = postService.handleVote(voteRequest);
-            return ResponseEntity.ok(postDTO);
+            Post post = postService.handleVote(voteRequest);
+            return ResponseEntity.ok(postService.getPostById(post.getId()));
         } else {
             return ResponseEntity.badRequest().build();
         }
