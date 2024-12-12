@@ -35,6 +35,8 @@ public class UserMapper {
                 .email(user.isMailVisible() ? user.getEmail() : null)
                 .profilePicture(user.getProfilePicture())
                 .bio(user.getBio())
+                .upvotes(user.getUpvotes())
+                .downvotes(user.getDownvotes())
                 .totalPoints(user.getTotalPoints())
                 .accountCreated(user.getAccountCreated())
                 .lastActivity(user.getLastActivity())

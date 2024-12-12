@@ -235,8 +235,8 @@ export default function ProfilePage({ params }) {
             </p>
             <p>Points: {profile.totalPoints}</p>
             <div className="flex">
-              <p className="mr-2 text-blue-500">+{profile.upvote}</p>
-              <p className="text-red-500">-{profile.downvote}</p>
+              <p className="mr-2 text-blue-500">+{profile.upvotes}</p>
+              <p className="text-red-500">-{profile.downvotes}</p>
             </div>
           </div>
           <div>

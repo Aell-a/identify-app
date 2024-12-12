@@ -21,8 +21,8 @@ public class Profile {
     private LocalDateTime accountCreated;
     private LocalDateTime lastActivity;
     private int totalPoints;
-    private int upvote;
-    private int downvote;
+    private int upvotes;
+    private int downvotes;
     private List<Long> followedTags;
     private List<Long> badges;
     private List<MiniPostDTO> recentPosts;
