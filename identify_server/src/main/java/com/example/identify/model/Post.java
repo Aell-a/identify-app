@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -28,8 +29,13 @@ public class Post {
 
     private int numberOfComments = 0;
     private int upvotes = 0;
-    private int downvote = 0;
-    private int totalPoints = 0;
+    private int downvotes = 0;
+
+    @ElementCollection
+    private Set<Long> upvotedUserIds = new HashSet<>();
+
+    @ElementCollection
+    private Set<Long> downvotedUserIds = new HashSet<>();
 
     @Embedded
     private Mystery mystery;

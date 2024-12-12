@@ -118,7 +118,7 @@ public class PostController {
     public ResponseEntity<CommentDTO> addComment(@PathVariable Long postId, @RequestBody String req) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
-        CommentRequest commentRequest = new CommentRequest();
+        CommentRequest commentRequest;
         try {
             commentRequest = objectMapper.readValue(req, CommentRequest.class);
         } catch (JsonProcessingException e) {
@@ -126,5 +126,15 @@ public class PostController {
         }
         Comment newComment = postService.addComment(commentRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(commentMapper.toCommentDTO(newComment));
+    }
+
+    @PostMapping("/vote")
+    public ResponseEntity<?> handleVote(@RequestBody VoteRequest voteRequest) {
+        if (voteRequest.getUserId() != null && voteRequest.getPostId() != null) {
+            PostDTO postDTO = postService.handleVote(voteRequest);
+            return ResponseEntity.ok(postDTO);
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

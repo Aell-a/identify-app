@@ -20,7 +20,7 @@ public class UserMapper {
                 .id(user.getId())
                 .nickname(user.getNickname())
                 .profilePicture(user.getProfilePicture())
-                .totalPoints(user.getTotalPoint())
+                .totalPoints(user.getTotalPoints())
                 .createdAt(user.getAccountCreated())
                 .build();
     }
@@ -35,7 +35,7 @@ public class UserMapper {
                 .email(user.isMailVisible() ? user.getEmail() : null)
                 .profilePicture(user.getProfilePicture())
                 .bio(user.getBio())
-                .totalPoints(user.getTotalPoint())
+                .totalPoints(user.getTotalPoints())
                 .accountCreated(user.getAccountCreated())
                 .lastActivity(user.getLastActivity())
                 .recentPosts(recentPosts)

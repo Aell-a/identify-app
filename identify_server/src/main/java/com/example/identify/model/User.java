@@ -66,13 +66,13 @@ public class User {
     private List<Long> suspensions = new ArrayList<>(); // Suspension IDs
 
     @Column(nullable = false)
-    private int totalPoint = 0; // Total points accumulated
+    private int totalPoints = 0; // Total points accumulated
 
     @Column(nullable = false)
-    private int upvote = 0; // Total upvote received
+    private int upvotes = 0; // Total upvote received
 
     @Column(nullable = false)
-    private int downvote = 0; // Total downvote received
+    private int downvotes = 0; // Total downvote received
 
     @Column(nullable = false)
     private boolean isDeleted = false;

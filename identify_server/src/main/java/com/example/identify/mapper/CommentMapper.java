@@ -18,6 +18,8 @@ public class CommentMapper {
                 .id(comment.getId())
                 .parentId(comment.getParentId())
                 .postId(comment.getPost().getId())
+                .upvotes(comment.getUpvotes())
+                .downvotes(comment.getDownvotes())
                 .content(comment.getContent())
                 .type(comment.getType())
                 .createdAt(comment.getCreatedAt())

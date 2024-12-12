@@ -123,7 +123,7 @@ public class UserService {
         List<CommentDTO> recentComments = commentRepository.findRecentCommentsByUserId(userEntity.getId())
                 .stream()
                 .limit(5)
-                .map(comment -> new CommentDTO(comment.getId(), comment.getParentId(), comment.getPost().getId(), comment.getContent(), comment.getType(), comment.getCreatedAt(), userMini))
+                .map(comment -> new CommentDTO(comment.getId(), comment.getParentId(), comment.getPost().getId(), comment.getContent(), comment.getType(), comment.getCreatedAt(), userMini, comment.getUpvotes(), comment.getDownvotes()))
                 .toList();
 
         return userMapper.toProfile(userEntity, recentPosts, recentComments);
@@ -158,7 +158,7 @@ public class UserService {
             List<CommentDTO> recentComments = commentRepository.findRecentCommentsByUserId(user.getId())
                     .stream()
                     .limit(5)
-                    .map(comment -> new CommentDTO(comment.getId(), comment.getParentId(), comment.getPost().getId(), comment.getContent(), comment.getType(), comment.getCreatedAt(), userMini))
+                    .map(comment -> new CommentDTO(comment.getId(), comment.getParentId(), comment.getPost().getId(), comment.getContent(), comment.getType(), comment.getCreatedAt(), userMini, comment.getUpvotes(), comment.getDownvotes()))
                     .toList();
 
             return userMapper.toProfile(user, recentPosts, recentComments);

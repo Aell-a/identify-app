@@ -19,4 +19,6 @@ public class CommentDTO {
     private CommentType type;
     private LocalDateTime createdAt;
     private MiniProfile user;
+    private int upvotes;
+    private int downvotes;
 }

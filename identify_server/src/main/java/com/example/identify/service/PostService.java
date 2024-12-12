@@ -7,6 +7,7 @@ import com.example.identify.model.*;
 import com.example.identify.mapper.PostMapper;
 import com.example.identify.repository.CommentRepository;
 import com.example.identify.repository.PostRepository;
+import com.example.identify.repository.UserRepository;
 import com.example.identify.repository.WikidataLabelRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ import java.util.stream.Collectors;
 @Service
 public class PostService {
     public final PostRepository postRepository;
+    @Autowired
+    private UserRepository userRepository;
+
     public PostService(PostRepository postRepository) {
         this.postRepository = postRepository;
     }
@@ -155,5 +159,47 @@ public class PostService {
         commentRepository.save(comment);
         postRepository.save(post);
         return comment;
+    }
+
+    public PostDTO handleVote(VoteRequest voteRequest) {
+        User voter = userRepository.findById(voteRequest.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Post post = postRepository.findById(voteRequest.getPostId())
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        if (voteRequest.getTargetType().equals("post")) {
+            User poster = userRepository.findById(post.getUserId())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            if (voteRequest.getVoteType().equals("upvote")) {
+                post.setUpvotes(post.getUpvotes() + 1);
+                post.getUpvotedUserIds().add(voter.getId());
+                poster.setUpvotes(poster.getUpvotes() + 1);
+                poster.setTotalPoints(poster.getTotalPoints() + 1);
+            } else {
+                post.setDownvotes(post.getDownvotes() + 1);
+                post.getDownvotedUserIds().add(voter.getId());
+                poster.setDownvotes(poster.getDownvotes() + 1);
+                poster.setTotalPoints(poster.getTotalPoints() - 1);
+            }
+            userRepository.save(poster);
+        } else {
+            Comment comment = commentRepository.findByPostAndCommentId(voteRequest.getPostId(), voteRequest.getCommentId());
+            User commenter = userRepository.findById(comment.getUserId())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            if (voteRequest.getVoteType().equals("upvote")) {
+                comment.setUpvotes(comment.getUpvotes() + 1);
+                comment.getUpvotedUserIds().add(voter.getId());
+                commenter.setUpvotes(commenter.getUpvotes() + 1);
+                commenter.setTotalPoints(commenter.getTotalPoints() + 1);
+            } else {
+                comment.setDownvotes(comment.getDownvotes() + 1);
+                comment.getDownvotedUserIds().add(voter.getId());
+                commenter.setDownvotes(commenter.getDownvotes() + 1);
+                commenter.setTotalPoints(commenter.getTotalPoints() - 1);
+            }
+            userRepository.save(commenter);
+            commentRepository.save(comment);
+        }
+        postRepository.save(post);
+        return getPostById(post.getId());
     }
 }

@@ -3,6 +3,8 @@ package com.example.identify.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Data
@@ -22,8 +24,13 @@ public class Comment {
     private LocalDateTime updatedAt;
 
     private int upvotes = 0;
-    private int downvote = 0;
-    private int totalPoints = 0;
+    private int downvotes = 0;
+
+    @ElementCollection
+    private Set<Long> upvotedUserIds = new HashSet<>();
+
+    @ElementCollection
+    private Set<Long> downvotedUserIds = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
