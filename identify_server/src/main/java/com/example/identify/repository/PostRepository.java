@@ -16,4 +16,15 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findAllByTagId(@Param("tagId") Long tagId);
     @Query("SELECT p FROM Post p WHERE p.userId = :userId ORDER BY p.createdAt DESC")
     List<Post> findRecentPostsByUserId(@Param("userId") Long userId);
+    @Query("SELECT p FROM Post p " +
+            "JOIN p.mystery m " +
+            "LEFT JOIN m.wikidataLabels w " +
+            "WHERE (:color IS NULL OR :color MEMBER OF m.colors) " +
+            "AND (:shape IS NULL OR :shape MEMBER OF m.shapes) " +
+            "AND (:material IS NULL OR :material MEMBER OF m.materials) " +
+            "AND (:wikidataLabelTitle IS NULL OR w.title LIKE %:wikidataLabelTitle%)")
+    List<Post> searchByAllFields(@Param("color") String color,
+                                 @Param("shape") String shape,
+                                 @Param("material") String material,
+                                 @Param("wikidataLabelTitle") String wikidataLabelTitle);
 }

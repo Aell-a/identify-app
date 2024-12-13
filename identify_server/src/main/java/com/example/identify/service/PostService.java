@@ -9,6 +9,7 @@ import com.example.identify.repository.CommentRepository;
 import com.example.identify.repository.PostRepository;
 import com.example.identify.repository.UserRepository;
 import com.example.identify.repository.WikidataLabelRepository;
+import com.example.identify.util.StringUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -211,5 +212,19 @@ public class PostService {
             post.setStatus(PostStatus.RESOLVED);
             postRepository.save(post);
         }
+    }
+
+    public List<MiniPostDTO> searchPosts(String color, String shape, String material, String wikidataLabelTitle) {
+        color = StringUtil.formatSearchParameters(color);
+        shape = StringUtil.formatSearchParameters(shape);
+        material = StringUtil.formatSearchParameters(material);
+
+        List<Post> posts = postRepository.searchByAllFields(color, shape, material, wikidataLabelTitle);
+        return posts.stream()
+                .map(post -> {
+                    MiniProfile miniProfile = userService.getMiniProfile(post.getUserId());
+                    return postMapper.toMiniPostDTO(post, miniProfile);
+                })
+                .collect(Collectors.toList());
     }
 }

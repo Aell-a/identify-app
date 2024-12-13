@@ -149,4 +149,13 @@ public class PostController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<MiniPostDTO>> searchPosts(@RequestParam(required = false) String color,
+                                                     @RequestParam(required = false) String shape,
+                                                     @RequestParam(required = false) String material,
+                                                     @RequestParam(required = false) String wikidataLabelTitle) {
+        List<MiniPostDTO> posts = postService.searchPosts(color, shape, material, wikidataLabelTitle);
+        return ResponseEntity.ok(posts);
+    }
 }
