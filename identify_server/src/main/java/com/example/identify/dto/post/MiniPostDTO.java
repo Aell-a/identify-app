@@ -20,5 +20,6 @@ public class MiniPostDTO {
     private Set<Tag> tags;
     private String imageUrl;
     private int numberOfComments;
+    private Long resolutionCommentId;
     private LocalDateTime createdAt;
 }

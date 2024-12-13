@@ -139,4 +139,14 @@ public class PostController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @PostMapping("/resolve/{postId}")
+    public ResponseEntity<?> handleResolve(@PathVariable Long postId, @RequestBody Long commentId) {
+        if (postService.getPostById(postId) != null) {
+            postService.handleResolution(postId, commentId);
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

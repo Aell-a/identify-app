@@ -202,4 +202,14 @@ public class PostService {
         postRepository.save(post);
         return post;
     }
+
+    public void handleResolution(Long postId, Long commentId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        if (post.getResolutionCommentId() == null) {
+            post.setResolutionCommentId(commentId);
+            post.setStatus(PostStatus.RESOLVED);
+            postRepository.save(post);
+        }
+    }
 }

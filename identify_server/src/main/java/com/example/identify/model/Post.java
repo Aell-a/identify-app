@@ -37,6 +37,8 @@ public class Post {
     @ElementCollection
     private Set<Long> downvotedUserIds = new HashSet<>();
 
+    private Long resolutionCommentId;
+
     @Embedded
     private Mystery mystery;
 

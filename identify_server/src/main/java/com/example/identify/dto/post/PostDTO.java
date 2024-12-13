@@ -23,6 +23,7 @@ public class PostDTO {
     private LocalDateTime updatedAt;
     private PostStatus status;
     private int numberOfComments;
+    private Long resolutionCommentId;
     private int upvotes;
     private Set<Long> upvotedUserIds;
     private int downvotes;
