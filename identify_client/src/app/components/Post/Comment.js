@@ -6,9 +6,16 @@ import AddComment from "./AddComment";
 import placeholder from "../../../../public/placeholder.png";
 import { useAuth } from "@/lib/auth";
 
-export default function Comment({ comment, onAddReply, depth }) {
+export default function Comment({
+  comment,
+  onAddReply,
+  postOwner,
+  depth,
+  onMarkAsResolution,
+  className,
+}) {
   const [showReplyForm, setShowReplyForm] = useState(false);
-  const { user } = useAuth();
+  const { user, id } = useAuth();
 
   const handleAddReply = (replyContent) => {
     onAddReply(comment.id, replyContent);
@@ -19,9 +26,13 @@ export default function Comment({ comment, onAddReply, depth }) {
     setShowReplyForm(false);
   };
 
+  const handleMarkAsResolution = () => {
+    onMarkAsResolution(comment.id);
+  };
+
   return (
     <div
-      className={`bg-gray-700 rounded-lg p-4 ${
+      className={`bg-gray-700 rounded-lg p-4 ${className} ${
         depth > 0 ? "ml-4 border-l-2 border-gray-600" : ""
       }`}
     >
@@ -79,6 +90,16 @@ export default function Comment({ comment, onAddReply, depth }) {
             upvotedUserIds={comment.upvotedUserIds}
             downvotedUserIds={comment.downvotedUserIds}
           />
+          {id == postOwner && !comment.isResolution && (
+            <div className="flex items-center space-x-4 text-sm text-gray-400">
+              <button
+                onClick={handleMarkAsResolution}
+                className="hover:text-gray-200"
+              >
+                Mark as Resolution
+              </button>
+            </div>
+          )}
         </div>
       )}
       {showReplyForm && (

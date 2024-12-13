@@ -159,3 +159,14 @@ export const handleVote = async (voteRequest, token) => {
     })
   );
 };
+
+export const markResolution = async (postId, commentId, token) => {
+  return await handleApiResponse(async () =>
+    api.post(`/posts/resolve/${postId}`, JSON.stringify(commentId), {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+  );
+};

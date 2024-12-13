@@ -10,7 +10,13 @@ const SORT_OPTIONS = [
   { label: "Most Upvotes", value: "upvotes" },
 ];
 
-export default function CommentSection({ postId, loadedComments }) {
+export default function CommentSection({
+  postId,
+  postOwner,
+  loadedComments,
+  onMarkAsResolution,
+  resolutionId,
+}) {
   const [comments, setComments] = useState([]);
   const [sortBy, setSortBy] = useState("newest");
   const { id, token } = useAuth();
@@ -55,10 +61,22 @@ export default function CommentSection({ postId, loadedComments }) {
     return sortComments(rootComments);
   };
 
-  const sortedComments = useMemo(
-    () => organizeComments(comments),
-    [comments, sortBy]
-  );
+  const sortedComments = useMemo(() => {
+    const organizedComments = organizeComments(comments);
+    const resolutionComment = comments.find(
+      (comment) => comment.id === resolutionId
+    );
+
+    if (resolutionComment) {
+      organizedComments.forEach((comment) => {
+        if (comment.id === resolutionId) {
+          comment.isResolution = true;
+        }
+      });
+    }
+
+    return organizedComments;
+  }, [comments, resolutionId]);
 
   const handleAddComment = async (newComment) => {
     const commentRequest = {
@@ -124,9 +142,12 @@ export default function CommentSection({ postId, loadedComments }) {
           sortedComments.map((comment) => (
             <Comment
               key={comment.id}
+              postOwner={postOwner}
               comment={comment}
               onAddReply={handleReplyComment}
               depth={0}
+              onMarkAsResolution={onMarkAsResolution}
+              className={comment.isResolution ? "border border-green-500" : ""}
             />
           ))
         ) : (
