@@ -5,6 +5,7 @@ import { searchPosts } from "@/lib/middleware";
 import PostPreview from "../components/FrontPage/PostPreview";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 export default function SearchResults() {
   const searchParams = useSearchParams();
@@ -46,7 +47,9 @@ export default function SearchResults() {
           {results.length > 0 ? (
             <div className="space-y-4">
               {results.map((post) => (
-                <PostPreview key={post.id} post={post} />
+                <Link key={post.id} href={`/post/${post.id}`}>
+                  <PostPreview post={post} />
+                </Link>
               ))}
             </div>
           ) : (
