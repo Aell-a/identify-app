@@ -3,3 +3,5 @@
 identify-444310-1e88fa2b4cbe.json
 *.DS_Store
 *.env
+.env.development
+.env.production
