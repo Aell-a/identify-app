@@ -170,3 +170,23 @@ export const markResolution = async (postId, commentId, token) => {
     })
   );
 };
+
+export const searchPosts = async (
+  color,
+  shape,
+  material,
+  wikidataLabelTitle
+) => {
+  const params = {
+    color: color === "null" ? null : color,
+    shape: shape === "null" ? null : shape,
+    material: material === "null" ? null : material,
+    wikidataLabelTitle:
+      wikidataLabelTitle === "null" ? null : wikidataLabelTitle,
+  };
+  return await handleApiResponse(() =>
+    api.get(`/posts/search`, {
+      params: params,
+    })
+  );
+};

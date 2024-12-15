@@ -12,6 +12,7 @@ import { createPost, getMainPagePosts } from "@/lib/middleware";
 import { debounce } from "lodash";
 import LoadingIndicator from "./components/Appwide/LoadingIndicatior";
 import { useRouter } from "next/navigation";
+import SearchBar from "./components/Appwide/SearchBar";
 
 export default function Home() {
   const [isAuthPopupOpen, setIsAuthPopupOpen] = useState(false);
@@ -97,6 +98,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center ">
+      <SearchBar />
       <div className="container mx-auto px-4 py-8">
         <div className="space-y-8">
           {posts.map((post) => (

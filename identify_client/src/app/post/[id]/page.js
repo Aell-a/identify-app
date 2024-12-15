@@ -14,21 +14,24 @@ export default function PostPage() {
   const [isLoaded, setIsLoaded] = useState(false);
   const { token } = useAuth();
 
-  const fetchPost = useCallback(async (id) => {
-    try {
-      const response = await getPost(id);
-      if (response.success) {
-        setPost(response.data);
-        setComments(response.data.comments);
-        setIsLoaded(true);
+  const fetchPost = useCallback(
+    async (id) => {
+      try {
+        const response = await getPost(id);
+        if (response.success) {
+          setPost(response.data);
+          setComments(response.data.comments);
+          setIsLoaded(true);
+        }
+        if (isLoaded) {
+          console.log(post);
+        }
+      } catch (error) {
+        console.error("Error while loading post:", error);
       }
-      if (isLoaded) {
-        console.log(post);
-      }
-    } catch (error) {
-      console.error("Error while loading post:", error);
-    }
-  }, []);
+    },
+    [isLoaded, post]
+  );
 
   useEffect(() => {
     fetchPost(params.id);

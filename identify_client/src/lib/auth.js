@@ -75,7 +75,7 @@ export function AuthProvider({ children }) {
     };
 
     checkAuth();
-  }, []);
+  }, [state.user]);
 
   const handleLogin = async (identifier, password) => {
     dispatch({ type: "LOADING" });
