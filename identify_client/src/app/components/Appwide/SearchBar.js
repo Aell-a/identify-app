@@ -18,7 +18,6 @@ export default function SearchBar() {
   const router = useRouter();
 
   const parseQuery = (input) => {
-    console.log(input);
     const params = {
       color: null,
       shape: null,

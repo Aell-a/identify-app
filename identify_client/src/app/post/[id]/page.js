@@ -23,9 +23,6 @@ export default function PostPage() {
           setComments(response.data.comments);
           setIsLoaded(true);
         }
-        if (isLoaded) {
-          console.log(post);
-        }
       } catch (error) {
         console.error("Error while loading post:", error);
       }

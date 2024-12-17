@@ -94,7 +94,6 @@ export default function WikidataSearch({ selectedLabels, onChange }) {
       ...item,
       relatedLabels,
     };
-    console.log(selectedItem);
     const updatedLabels = [...selectedLabels, selectedItem];
     onChange(updatedLabels);
     setResults([]);
