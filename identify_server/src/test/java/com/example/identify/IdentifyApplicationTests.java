@@ -1,4 +1,4 @@
-package identify;
+package com.example.identify;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,5 +9,4 @@ class IdentifyApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }
