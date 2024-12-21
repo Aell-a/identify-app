@@ -4,6 +4,12 @@ IDentify is a collaborative platform designed to help users identify, discuss, a
 
 ---
 
+## Deployment
+
+Here is the link to our [last release v0.9](https://github.com/Aell-a/identify-app/releases/tag/v0.9) in production: [https://www.identify.software](https://www.identify.software)
+
+---
+
 ## Features
 
 - **User Registration and Login**: Users can create accounts and securely log in.
