@@ -83,16 +83,24 @@ export default function Home() {
   }, [page, loading, handleLoadMore]);
 
   const handlePostSubmit = async (formData) => {
-    setIsPostPopupOpen(false);
     try {
       const response = await createPost(formData, token);
-      if (response.success && response.data.id) {
-        router.push(`/post/${response.data.id}`);
+      console.log(response);
+      if (response.success) {
+        setIsPostPopupOpen(false);
+        router.push(`/post/${response.data.data}`);
+        return response;
       } else {
-        console.error("Failed to create post:", response.error);
+        return {
+          success: false,
+          error: response.error || "Failed to create post",
+        };
       }
     } catch (error) {
-      console.error("Error creating post:", error);
+      return {
+        success: false,
+        error: error.message || "An unexpected error occurred",
+      };
     }
   };
 

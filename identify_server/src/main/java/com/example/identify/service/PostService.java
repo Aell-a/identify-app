@@ -2,6 +2,8 @@ package com.example.identify.service;
 
 import com.example.identify.dto.post.*;
 import com.example.identify.dto.user.MiniProfile;
+import com.example.identify.exception.MediaUploadException;
+import com.example.identify.exception.PostCreationException;
 import com.example.identify.mapper.CommentMapper;
 import com.example.identify.model.*;
 import com.example.identify.mapper.PostMapper;
@@ -15,8 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -83,12 +85,48 @@ public class PostService {
     }
 
     @Transactional
-    public Post createPost(PostRequest postRequest) {
-        Post post = new Post();
-        post.setUserId(postRequest.getUserId());
-        post.setTitle(postRequest.getTitle());
-        post.setDescription(postRequest.getDescription());
+    public Post createPost(PostRequest postRequest) throws PostCreationException {
+        try {
+            validatePostRequest(postRequest);
+            
+            Post post = new Post();
+            post.setUserId(postRequest.getUserId());
+            post.setTitle(postRequest.getTitle());
+            post.setDescription(postRequest.getDescription());
 
+            Mystery mystery = createMystery(postRequest);
+            List<Media> mediaList = processMediaFiles(postRequest);
+            mystery.setMedias(mediaList);
+            
+            if (postRequest.getLabelRequests() != null && !postRequest.getLabelRequests().isEmpty()) {
+                List<WikidataLabel> labelList = processWikidataLabels(postRequest);
+                mystery.setWikidataLabels(labelList);
+            }
+            
+            post.setMystery(mystery);
+            post.setStatus(PostStatus.ACTIVE);
+            
+            return postRepository.save(post);
+        } catch (PostCreationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new PostCreationException("Failed to create post: " + e.getMessage(), e);
+        }
+    }
+
+    private void validatePostRequest(PostRequest postRequest) throws PostCreationException {
+        if (StringUtil.isNullOrEmpty(postRequest.getTitle())) {
+            throw new PostCreationException("Title is required");
+        }
+        if (StringUtil.isNullOrEmpty(postRequest.getDescription())) {
+            throw new PostCreationException("Description is required");
+        }
+        if (postRequest.getMediaRequests() == null || postRequest.getMediaRequests().isEmpty()) {
+            throw new PostCreationException("At least one media file is required");
+        }
+    }
+
+    private Mystery createMystery(PostRequest postRequest) {
         Mystery mystery = new Mystery();
         mystery.setWeight(postRequest.getWeight());
         mystery.setColors(postRequest.getColors());
@@ -97,43 +135,59 @@ public class PostService {
         mystery.setSizeX(postRequest.getSizeX());
         mystery.setSizeY(postRequest.getSizeY());
         mystery.setSizeZ(postRequest.getSizeZ());
-        if (postRequest.getMediaRequests() == null || postRequest.getMediaRequests().isEmpty()) {
-            throw new IllegalArgumentException("At least one media file is required");
-        }
+        return mystery;
+    }
 
-        List<Media> mediaList = postRequest.getMediaRequests().stream()
-                .map(mediaRequest -> {
-                    try {
-                        return mediaService.uploadMedia(mediaRequest.getFile(), postRequest.getUserId());
-                    } catch (IOException e) {
-                        throw new RuntimeException("Failed to upload media", e);
-                    }
-                })
-                .toList();
-        mystery.setMedias(mediaList);
-        if (postRequest.getLabelRequests() != null && !postRequest.getLabelRequests().isEmpty()) {
-            List<WikidataLabel> labelList = postRequest.getLabelRequests().stream()
-                    .map(labelRequest -> wikidataLabelRepository
-                            .findById(labelRequest.getWikidataId())
-                            .orElseGet(() -> {
-                                WikidataLabel newLabel = new WikidataLabel();
-                                newLabel.setWikidataId(labelRequest.getWikidataId());
-                                newLabel.setTitle(labelRequest.getTitle());
-                                newLabel.setDescription(labelRequest.getDescription());
-                                newLabel.setRelatedLabels(labelRequest.getRelatedLabels());
-                                return wikidataLabelRepository.save(newLabel);
-                            }))
-                    .toList();
-            mystery.setWikidataLabels(labelList);
-        }
-        post.setMystery(mystery);
-        post.setStatus(PostStatus.ACTIVE);
-
+    private List<Media> processMediaFiles(PostRequest postRequest) throws PostCreationException {
         try {
-            return postRepository.save(post);
+            return postRequest.getMediaRequests().stream()
+                    .map(mediaRequest -> {
+                        try {
+                            validateMediaFile(mediaRequest.getFile());
+                            return mediaService.uploadMedia(mediaRequest.getFile(), postRequest.getUserId());
+                        } catch (MediaUploadException e) {
+                            throw new PostCreationException("Media upload failed: " + e.getMessage());
+                        }
+                    })
+                    .toList();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create post", e);
+            throw new PostCreationException("Error processing media files: " + e.getMessage());
         }
+    }
+
+    private void validateMediaFile(MultipartFile file) throws PostCreationException {
+        if (file == null || file.isEmpty()) {
+            throw new PostCreationException("Invalid media file");
+        }
+        
+        String contentType = file.getContentType();
+        if (contentType == null || !isValidMediaType(contentType)) {
+            throw new PostCreationException("Invalid file format. Supported formats: JPG, PNG");
+        }
+        
+        if (file.getSize() > 10_000_000) { // 10MB limit
+            throw new PostCreationException("File size exceeds maximum limit of 10MB");
+        }
+    }
+
+    private boolean isValidMediaType(String contentType) {
+        return contentType.equals("image/jpeg") ||
+               contentType.equals("image/png");
+    }
+
+    private List<WikidataLabel> processWikidataLabels(PostRequest postRequest) {
+        return postRequest.getLabelRequests().stream()
+                .map(labelRequest -> wikidataLabelRepository
+                        .findById(labelRequest.getWikidataId())
+                        .orElseGet(() -> {
+                            WikidataLabel newLabel = new WikidataLabel();
+                            newLabel.setWikidataId(labelRequest.getWikidataId());
+                            newLabel.setTitle(labelRequest.getTitle());
+                            newLabel.setDescription(labelRequest.getDescription());
+                            newLabel.setRelatedLabels(labelRequest.getRelatedLabels());
+                            return wikidataLabelRepository.save(newLabel);
+                        }))
+                .toList();
     }
 
     public Comment addComment(CommentRequest request) {

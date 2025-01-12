@@ -20,6 +20,7 @@ public class Post {
 
     private Long userId;
     private String title;
+    @Column(columnDefinition = "TEXT")
     private String description;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt;

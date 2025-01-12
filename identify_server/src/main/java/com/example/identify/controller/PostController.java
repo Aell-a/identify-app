@@ -1,7 +1,9 @@
 package com.example.identify.controller;
 
+import com.example.identify.dto.ApiResponse;
 import com.example.identify.dto.media.MediaRequest;
 import com.example.identify.dto.post.*;
+import com.example.identify.exception.PostCreationException;
 import com.example.identify.mapper.CommentMapper;
 import com.example.identify.model.Comment;
 import com.example.identify.model.Post;
@@ -19,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -72,47 +75,35 @@ public class PostController {
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createPost(@RequestPart("postRequest") String postRequestJSON,
-                                        @RequestPart("files") List<MultipartFile> files) {
+                                      @RequestPart(value = "files", required = false) List<MultipartFile> files) {
         try {
-            if (files == null || files.isEmpty()) {
-                return ResponseEntity
-                        .badRequest()
-                        .body("At least one media file is required");
-            }
-
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());
             PostRequest postRequest = mapper.readValue(postRequestJSON, PostRequest.class);
+            System.out.println(postRequest);
 
-            if (postRequest.getUserId() == null) {
-                return ResponseEntity
-                        .badRequest()
-                        .body("User ID is required");
-            }
-
-            List<MediaRequest> mediaRequests = files.stream()
+            List<MediaRequest> mediaRequests = files != null ? files.stream()
                     .map(file -> {
                         MediaRequest mediaRequest = new MediaRequest();
                         mediaRequest.setFile(file);
                         return mediaRequest;
                     })
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toList()) : new ArrayList<>();
             postRequest.setMediaRequests(mediaRequests);
 
             Post newPost = postService.createPost(postRequest);
             return ResponseEntity
                     .status(HttpStatus.CREATED)
-                    .body(newPost.getId());
+                    .body(new ApiResponse<>(true, newPost.getId(), null));
 
-        } catch (IllegalArgumentException e) {
+        } catch (PostCreationException e) {
             return ResponseEntity
                     .badRequest()
-                    .body(e.getMessage());
+                    .body(new ApiResponse<>(false, null, e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to create post: " + e.getMessage());
+                    .body(new ApiResponse<>(false, null, "An unexpected error occurred: " + e.getMessage()));
         }
     }
 

@@ -8,4 +8,8 @@ public class StringUtil {
             return input.substring(0,1).toUpperCase() + input.substring(1).toLowerCase();
         }
     }
+
+    public static boolean isNullOrEmpty(String input) {
+        return input == null || input.isEmpty();
+    }
 }

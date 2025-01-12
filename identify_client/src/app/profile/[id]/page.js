@@ -24,7 +24,7 @@ export default function ProfilePage({ params }) {
       const response = await getProfile(id);
       setProfile(response.data);
       if (response) {
-        setEditedBio(response.bio);
+        setEditedBio(response.data.bio || "");
       }
     } catch (error) {
       console.error(error);
@@ -73,7 +73,7 @@ export default function ProfilePage({ params }) {
   const handleSaveProfile = useCallback(async () => {
     try {
       const response = await editProfile(
-        { ...profile, bio: editedBio },
+        { ...profile, bio: editedBio || "" },
         processedImage,
         token
       );

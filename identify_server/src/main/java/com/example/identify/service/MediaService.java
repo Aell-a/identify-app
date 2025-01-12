@@ -5,6 +5,7 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.example.identify.model.Media;
+import com.example.identify.exception.MediaUploadException;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -26,9 +27,9 @@ public class MediaService {
         this.storage = StorageOptions.getDefaultInstance().getService();
     }
 
-    public Media uploadMedia(MultipartFile file, Long userId) throws IOException {
+    public Media uploadMedia(MultipartFile file, Long userId) throws MediaUploadException {
         if (file.isEmpty()) {
-            throw new IllegalArgumentException("File must not be empty");
+            throw new MediaUploadException("File must not be empty");
         }
 
         String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
@@ -41,18 +42,18 @@ public class MediaService {
 
         try {
             storage.create(blobInfo, file.getBytes());
+            String mediaUrl = String.format("https://storage.googleapis.com/%s/%s", bucketName, objectName);
+
+            Media media = new Media();
+            media.setMediaUrl(mediaUrl);
+            media.setMediaType(Objects.requireNonNull(file.getContentType()));
+            media.setMediaFormat(Objects.requireNonNull(FilenameUtils.getExtension(file.getOriginalFilename())));
+            return media;
+
+        } catch (IOException e) {
+            throw new MediaUploadException("Failed to read file contents: " + e.getMessage());
         } catch (Exception e) {
-            // Log the error and rethrow it
-            System.err.println("Error uploading file to Google Cloud Storage: " + e.getMessage());
-            throw new IOException("Failed to upload media", e);
+            throw new MediaUploadException("Failed to upload media to storage: " + e.getMessage());
         }
-
-        String mediaUrl = String.format("https://storage.googleapis.com/%s/%s", bucketName, objectName);
-
-        Media media = new Media();
-        media.setMediaUrl(mediaUrl);
-        media.setMediaType(Objects.requireNonNull(file.getContentType()));
-        media.setMediaFormat(Objects.requireNonNull(FilenameUtils.getExtension(file.getOriginalFilename())));
-        return media;
     }
 }

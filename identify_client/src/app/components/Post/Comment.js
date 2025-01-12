@@ -90,16 +90,18 @@ export default function Comment({
             upvotedUserIds={comment.upvotedUserIds}
             downvotedUserIds={comment.downvotedUserIds}
           />
-          {id == postOwner && !comment.isResolution && (
-            <div className="flex items-center space-x-4 text-sm text-gray-400">
-              <button
-                onClick={handleMarkAsResolution}
-                className="hover:text-gray-200"
-              >
-                Mark as Resolution
-              </button>
-            </div>
-          )}
+          {id == postOwner &&
+            !comment.isResolution &&
+            comment.type?.toLowerCase() === "guess" && (
+              <div className="flex items-center space-x-4 text-sm text-gray-400">
+                <button
+                  onClick={handleMarkAsResolution}
+                  className="hover:text-gray-200"
+                >
+                  Mark as Resolution
+                </button>
+              </div>
+            )}
         </div>
       )}
       {showReplyForm && (

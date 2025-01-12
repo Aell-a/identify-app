@@ -42,6 +42,9 @@ export default function PostPopup({ isOpen, onClose, onSubmit }) {
     size: { length: "", width: "", depth: "", unit: "cm" },
     labels: [],
   });
+
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { id } = useAuth();
 
   const handleInputChange = (e) => {
@@ -67,7 +70,12 @@ export default function PostPopup({ isOpen, onClose, onSubmit }) {
     setFormData((prev) => ({ ...prev, labels }));
   };
 
+  const handleMediaError = (error) => {
+    setError(error);
+  };
+
   const handleMediaChange = (files) => {
+    setError("");
     setFormData((prev) => ({ ...prev, mediaFiles: files }));
   };
 
@@ -98,10 +106,23 @@ export default function PostPopup({ isOpen, onClose, onSubmit }) {
     };
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const formattedData = formatDataForEndpoint();
-    onSubmit(formattedData);
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const formattedData = formatDataForEndpoint();
+      const response = await onSubmit(formattedData);
+
+      if (!response.success) {
+        setError(response.error || "Failed to create post");
+        setIsSubmitting(false);
+      }
+    } catch (error) {
+      setError(error.message || "An unexpected error occurred");
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -112,66 +133,76 @@ export default function PostPopup({ isOpen, onClose, onSubmit }) {
         description="object identification"
       >
         <div className="w-1/2 pr-4 space-y-4">
-          <h1 className="text-2xl">Create a New Post</h1>
-          <div>
-            <Label>Title</Label>
-            <Input
-              name="title"
-              value={formData.title}
-              onChange={handleInputChange}
-              required
-              className="bg-gray-700 text-gray-100 border-none"
-            />
-          </div>
-          <div>
-            <Label>Description</Label>
-            <Textarea
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              required
-              className="bg-gray-700 text-gray-100 border-none"
-            />
-          </div>
-          <div className="">
-            <Label>Upload Media</Label>
-            <MediaUpload
-              files={formData.mediaFiles}
-              onChange={handleMediaChange}
-            />
-          </div>
-          <div>
-            <Label>Labels</Label>
-            <WikidataSearch
-              selectedLabels={formData.labels}
-              onChange={handleLabelChange}
-            />
-          </div>
-          <div className="place-self-center">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <Button
-                    type="submit"
-                    className="bg-blue-600 hover:bg-blue-700 mt-4"
-                    onClick={handleSubmit}
-                  >
-                    Create Post
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>
-                    Every post should have a title, description and a media
-                    file.
-                  </p>
-                  <p>
-                    Please add as many identifiers and labels as you can to help
-                    your community identify the object.
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+          <h1 className="text-2xl">
+            {isSubmitting ? "Submitting..." : "Create a New Post"}
+          </h1>
+          {error && (
+            <div className="bg-red-500 text-white p-3 rounded-md mb-4">
+              {error}
+            </div>
+          )}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label>Title</Label>
+              <Input
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                required
+                className="bg-gray-700 text-gray-100 border-none"
+              />
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Textarea
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                required
+                className="bg-gray-700 text-gray-100 border-none"
+              />
+            </div>
+            <div>
+              <Label>Upload Media</Label>
+              <MediaUpload
+                files={formData.mediaFiles}
+                onChange={handleMediaChange}
+                onError={handleMediaError}
+              />
+            </div>
+            <div>
+              <Label>Labels</Label>
+              <WikidataSearch
+                selectedLabels={formData.labels}
+                onChange={handleLabelChange}
+              />
+            </div>
+            <div className="place-self-center">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Button
+                      type="submit"
+                      className="bg-blue-600 hover:bg-blue-700 mt-4"
+                      onClick={handleSubmit}
+                    >
+                      Create Post
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>
+                      Every post should have a title, description and a media
+                      file.
+                    </p>
+                    <p>
+                      Please add as many identifiers and labels as you can to
+                      help your community identify the object.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </form>
         </div>
         <div className="w-1/2 pl-4 space-y-4">
           <div>
